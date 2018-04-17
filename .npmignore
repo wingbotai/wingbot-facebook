@@ -1,0 +1,10 @@
+# tests
+
+.vscode
+.circleci
+coverage
+node_modules
+test
+bin
+
+doc/*
