@@ -16,7 +16,8 @@ const apiDoc = jsdoc2md.renderSync({
     files: [
         'src/Facebook.js',
         'src/Settings.js',
-        'src/MenuComposer.js'
+        'src/MenuComposer.js',
+        'src/userLoader.js'
     ]
 });
 

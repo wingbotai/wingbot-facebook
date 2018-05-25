@@ -12,6 +12,16 @@ Connector plugin for wingbot chatbot framework
 <dd></dd>
 <dt><a href="#Settings">Settings</a></dt>
 <dd></dd>
+<dt><a href="#MenuComposer">MenuComposer</a></dt>
+<dd></dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#userLoader">userLoader(pageToken)</a></dt>
+<dd><p>User loader middleware</p>
+</dd>
 </dl>
 
 <a name="Facebook"></a>
@@ -45,6 +55,10 @@ Connector plugin for wingbot chatbot framework
 Verifies Bots webhook against Facebook
 
 **Kind**: instance method of [<code>Facebook</code>](#Facebook)  
+**Throws**:
+
+- <code>Error</code> when the request is invalid
+
 
 | Param | Type |
 | --- | --- |
@@ -89,7 +103,7 @@ Process Facebook request
         * [.greeting([text])](#Settings+greeting) ⇒ <code>Promise</code>
         * [.getStartedButton([payload])](#Settings+getStartedButton) ⇒ <code>Promise</code>
         * [.whitelistDomain(domains)](#Settings+whitelistDomain) ⇒ <code>Promise</code>
-        * [.menu([locale], [inputDisabled])](#Settings+menu) ⇒ <code>MenuComposer</code>
+        * [.menu([locale], [inputDisabled])](#Settings+menu) ⇒ [<code>MenuComposer</code>](#MenuComposer)
     * _static_
         * [.Settings](#Settings.Settings)
             * [new Settings(token, [log], [req])](#new_Settings.Settings_new)
@@ -139,7 +153,7 @@ Useful for using facebook extension in webviews
 
 <a name="Settings+menu"></a>
 
-### settings.menu([locale], [inputDisabled]) ⇒ <code>MenuComposer</code>
+### settings.menu([locale], [inputDisabled]) ⇒ [<code>MenuComposer</code>](#MenuComposer)
 Sets up the persistent menu
 
 **Kind**: instance method of [<code>Settings</code>](#Settings)  
@@ -184,3 +198,112 @@ Creates an instance of Settings.
 | [log] | <code>Object</code> |  |
 | [req] | <code>function</code> | request library for resting purposes |
 
+<a name="MenuComposer"></a>
+
+## MenuComposer
+**Kind**: global class  
+
+* [MenuComposer](#MenuComposer)
+    * [new MenuComposer(onDone, [isTopLevel])](#new_MenuComposer_new)
+    * [.addPostBack(title, action, [data])](#MenuComposer+addPostBack) ⇒ <code>this</code>
+    * [.addUrl(title, url, [hasExtension], [webviewHeight])](#MenuComposer+addUrl) ⇒ <code>this</code>
+    * [.addNested(title)](#MenuComposer+addNested) ⇒ [<code>MenuComposer</code>](#MenuComposer)
+    * [.done()](#MenuComposer+done) ⇒ <code>this</code> \| <code>Promise</code>
+    * [.menu([locale], [inputDisabled])](#MenuComposer+menu) ⇒ [<code>MenuComposer</code>](#MenuComposer)
+
+<a name="new_MenuComposer_new"></a>
+
+### new MenuComposer(onDone, [isTopLevel])
+
+| Param | Type | Default |
+| --- | --- | --- |
+| onDone | <code>function</code> |  | 
+| [isTopLevel] | <code>boolean</code> | <code>true</code> | 
+
+<a name="MenuComposer+addPostBack"></a>
+
+### menuComposer.addPostBack(title, action, [data]) ⇒ <code>this</code>
+Add postback to menu
+
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+
+| Param | Type |
+| --- | --- |
+| title | <code>string</code> | 
+| action | <code>string</code> | 
+| [data] | <code>Object</code> | 
+
+<a name="MenuComposer+addUrl"></a>
+
+### menuComposer.addUrl(title, url, [hasExtension], [webviewHeight]) ⇒ <code>this</code>
+Add webview to menu
+
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| title | <code>string</code> |  | 
+| url | <code>string</code> |  | 
+| [hasExtension] | <code>boolean</code> | <code>false</code> | 
+| [webviewHeight] | <code>string</code> | <code>null</code> | 
+
+<a name="MenuComposer+addNested"></a>
+
+### menuComposer.addNested(title) ⇒ [<code>MenuComposer</code>](#MenuComposer)
+Add Nested menu component
+
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+
+| Param | Type |
+| --- | --- |
+| title | <code>string</code> | 
+
+<a name="MenuComposer+done"></a>
+
+### menuComposer.done() ⇒ <code>this</code> \| <code>Promise</code>
+Finish the menu
+
+Last call of "done" returns a promise
+
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+<a name="MenuComposer+menu"></a>
+
+### menuComposer.menu([locale], [inputDisabled]) ⇒ [<code>MenuComposer</code>](#MenuComposer)
+Finish the menu for the locale and starts a new menu
+
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+
+| Param | Type | Default |
+| --- | --- | --- |
+| [locale] | <code>string</code> | <code>&quot;default&quot;</code> | 
+| [inputDisabled] | <code>boolean</code> | <code>false</code> | 
+
+<a name="userLoader"></a>
+
+## userLoader(pageToken)
+User loader middleware
+
+**Kind**: global function  
+
+| Param | Type |
+| --- | --- |
+| pageToken | <code>string</code> | 
+
+**Example**  
+```javascript
+const { userLoader } = require('wingbot-facebook');
+
+bot.use(userLoader('<page token here>'));
+
+bot.use((req, res) => {
+    const {
+        firstName,
+        lastName,
+        profilePic,
+        locale,
+        gender
+    } = req.state.user;
+
+    res.text(`Hello ${firstName}!`);
+});
+```

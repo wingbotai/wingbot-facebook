@@ -4,51 +4,61 @@
 'use strict';
 
 const request = require('request-promise-native');
+const { Router } = require('wingbot');
 
-class UserLoader {
+const API_VERSION = 'v2.8';
 
-    constructor (token) {
-        this.token = token;
-        this.apiVersion = 'v2.8';
+/**
+ * User loader middleware
+ *
+ * @param {string} pageToken
+ * @example
+ * const { userLoader } = require('wingbot-facebook');
+ *
+ * bot.use(userLoader('<page token here>'));
+ *
+ * bot.use((req, res) => {
+ *     const {
+ *         firstName,
+ *         lastName,
+ *         profilePic,
+ *         locale,
+ *         gender
+ *     } = req.state.user;
+ *
+ *     res.text(`Hello ${firstName}!`);
+ * });
+ */
+function userLoader (pageToken) {
+    if (!pageToken) {
+        return () => Router.CONTINUE;
     }
 
-    /**
-     *
-     *
-     * @param {string} id
-     * @returns {Promise<{ firstName: string }>}
-     *
-     * @memberOf UserLoader
-     */
-    loadUser (id) {
-        if (!this.token || !id) {
-            return Promise.resolve(null);
+    return async (req, res) => {
+        if (typeof req.state.user === 'object') { // also for null value
+            return Router.CONTINUE;
         }
-        return this._loadUser(id, this.token);
-    }
 
-    _loadUser (id, token) {
-        return request({
-            uri: `https://graph.facebook.com/${this.apiVersion}/${id}`,
-            qs: { access_token: token },
+        const response = await request({
+            uri: `https://graph.facebook.com/${API_VERSION}/${req.senderId}`,
+            qs: { access_token: pageToken },
             method: 'GET',
             json: true
-        })
-            .then(res => this._postProcess(res));
-    }
+        });
 
-    _postProcess (res) {
-        return res
-            ? {
-                firstName: res.first_name,
-                lastName: res.last_name,
-                profilePic: res.profile_pic,
-                locale: res.locale,
-                gender: res.gender
-            }
-            : null;
-    }
+        const user = response ? {
+            firstName: response.first_name,
+            lastName: response.last_name,
+            profilePic: response.profile_pic,
+            locale: response.locale,
+            gender: response.gender
+        } : {};
 
+        res.setState({ user });
+        Object.assign(req.state, { user });
+
+        return Router.CONTINUE;
+    };
 }
 
-module.exports = UserLoader;
+module.exports = userLoader;

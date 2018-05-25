@@ -26,11 +26,12 @@ class Facebook {
      * @param {string} [options.botToken] - botToken for webhook verification
      * @param {string} [options.appSecret] - provide app secret to verify requests
      * @param {Function} [options.requestLib] - request library replacement
-     * @param {console} [options.senderLogger] - optional console like chat logger
+     * @param {console} [senderLogger] - optional console like chat logger
      */
-    constructor (processor, options) {
+    constructor (processor, options, senderLogger = null) {
         this.processor = processor;
         this._options = options;
+        this._senderLogger = senderLogger;
     }
 
     _getUnauthorizedError (message) {
@@ -42,6 +43,7 @@ class Facebook {
      * Verifies Bots webhook against Facebook
      *
      * @param {Object} queryString
+     * @throws {Error} when the request is invalid
      * @returns {string}
      */
     verifyWebhook (queryString) {
@@ -87,7 +89,7 @@ class Facebook {
     }
 
     _processEventsOfSender (senderId, events) {
-        const { senderLogger, requestLib } = this._options;
+        const { requestLib } = this._options;
         const options = this._options;
 
         return events.reduce((promise, { message, pageId }) => promise
@@ -96,7 +98,7 @@ class Facebook {
                     options,
                     senderId,
                     message,
-                    senderLogger,
+                    this._senderLogger,
                     requestLib
                 );
                 return this.processor.processMessage(message, pageId, messageSender);

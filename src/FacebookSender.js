@@ -17,7 +17,7 @@ class FacebookSender extends ReturnSender {
      * @param {console} [logger] - console like logger
      * @param {Function} [req] - request library replacement
      */
-    constructor (options, userId, incommingMessage, logger = console, req = request) {
+    constructor (options, userId, incommingMessage, logger = null, req = request) {
         super(options, userId, incommingMessage, logger);
 
         this._token = options.pageToken;
@@ -34,16 +34,26 @@ class FacebookSender extends ReturnSender {
 
         this._gotUserId = null;
 
-        this.url = 'https://graph.facebook.com/v2.8/me/messages';
+        this.url = 'https://graph.facebook.com/v2.8/me';
 
         this.waits = true;
 
         this._req = req;
+
+        this._resolveRef = null;
     }
 
     _request (data) {
+        let uri = this.url;
+
+        if (data.target_app_id) {
+            uri += '/pass_thread_control';
+        } else {
+            uri += '/messages';
+        }
+
         return this._req({
-            uri: this.url,
+            uri,
             qs: { access_token: this._token },
             method: 'POST',
             body: data,
@@ -74,7 +84,7 @@ class FacebookSender extends ReturnSender {
 
             const hasRecipientId = res && typeof res === 'object' && res.recipient_id;
 
-            if (hasRecipientId) {
+            if (hasRecipientId && this._resolveRef) {
                 this._replaceRecipient = {
                     recipient: { id: res.recipient_id }
                 };

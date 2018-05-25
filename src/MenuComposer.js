@@ -3,8 +3,16 @@
  */
 'use strict';
 
+/**
+ * @class
+ */
 class MenuComposer {
 
+    /**
+     *
+     * @param {Function} onDone
+     * @param {boolean} [isTopLevel]
+     */
     constructor (onDone, isTopLevel = true) {
         this.onDone = onDone;
         this.menus = [];
