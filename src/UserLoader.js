@@ -35,7 +35,9 @@ function userLoader (pageToken) {
     }
 
     return async (req, res) => {
-        if (typeof req.state.user === 'object') { // also for null value
+        if (typeof req.state.user === 'object'
+            || !`${req.senderId}`.match(/^[0-9]+$/)) { // also for null value
+
             return Router.CONTINUE;
         }
 
