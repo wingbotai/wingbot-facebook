@@ -89,20 +89,32 @@ class Facebook {
     }
 
     _processEventsOfSender (senderId, events) {
-        const { requestLib } = this._options;
+        return events.reduce(
+            (promise, { message, pageId }) => promise
+                .then(() => this.processMessage(message, senderId, pageId)),
+            Promise.resolve()
+        );
+    }
+
+    /**
+     *
+     * @param {Object} message - wingbot chat event
+     * @param {string} senderId - chat event sender identifier
+     * @param {string} pageId - channel/page identifier
+     * @returns {Promise}
+     */
+    processMessage (message, senderId, pageId) {
         const options = this._options;
 
-        return events.reduce((promise, { message, pageId }) => promise
-            .then(() => {
-                const messageSender = new FacebookSender(
-                    options,
-                    senderId,
-                    message,
-                    this._senderLogger,
-                    requestLib
-                );
-                return this.processor.processMessage(message, pageId, messageSender);
-            }), Promise.resolve());
+        const messageSender = new FacebookSender(
+            options,
+            senderId,
+            message,
+            this._senderLogger,
+            options.requestLib
+        );
+
+        return this.processor.processMessage(message, pageId, messageSender);
     }
 
     /**

@@ -143,7 +143,7 @@ class Settings {
      * @returns {MenuComposer}
      * @example
      *
-     * const { Settings } = require(''wingbot');
+     * const { Settings } = require('wingbot');
      *
      * const settings = new Settings('page-token-string');
      *
