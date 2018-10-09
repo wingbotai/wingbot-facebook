@@ -16,6 +16,12 @@ const PROCESS_EVENTS = [
     // 'take_thread_control'
 ];
 
+/**
+ * @typedef {Object} AttachmentCache
+ * @prop {Function} findAttachmentByUrl
+ * @prop {Function} saveAttachmentId
+ */
+
 class Facebook {
 
     /**
@@ -25,6 +31,7 @@ class Facebook {
      * @param {string} options.pageToken - facebook page token
      * @param {string} [options.botToken] - botToken for webhook verification
      * @param {string} [options.appSecret] - provide app secret to verify requests
+     * @param {AttachmentCache} [options.attachmentStorage] - cache for reusing attachments
      * @param {Function} [options.requestLib] - request library replacement
      * @param {console} [senderLogger] - optional console like chat logger
      */

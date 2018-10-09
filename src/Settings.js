@@ -4,8 +4,8 @@
 'use strict';
 
 const request = require('request-promise-native');
-const MenuComposer = require('./MenuComposer');
 const deepEqual = require('fast-deep-equal');
+const MenuComposer = require('./MenuComposer');
 
 /**
  * Utility, which helps us to set up chatbot behavior
@@ -138,7 +138,7 @@ class Settings {
     /**
      * Sets up the persistent menu
      *
-     * @param {string} [locale=default]
+     * @param {string} [locale]
      * @param {boolean} [inputDisabled=false]
      * @returns {MenuComposer}
      * @example
@@ -161,26 +161,28 @@ class Settings {
      *      .done();
      */
     menu (locale = 'default', inputDisabled = false) {
-        const composer = new MenuComposer(newMenu =>
-            this._get(['persistent_menu']).then((result) => {
+        const composer = new MenuComposer(newMenu => (
+            this._get(['persistent_menu'])
+                .then((result) => {
+                    let updateMenu;
 
-                let updateMenu;
+                    if (result.data.length === 0) {
+                        updateMenu = true;
+                    } else {
+                        const existingMenu = result.data[0].persistent_menu;
+                        updateMenu = !deepEqual(newMenu, existingMenu);
+                    }
 
-                if (result.data.length === 0) {
-                    updateMenu = true;
-                } else {
-                    const existingMenu = result.data[0].persistent_menu;
-                    updateMenu = !deepEqual(newMenu, existingMenu);
-                }
+                    if (!updateMenu) {
+                        return Promise.resolve();
+                    }
 
-                if (!updateMenu) {
-                    return Promise.resolve();
-                }
-
-                return this._post({
-                    persistent_menu: newMenu
-                });
-            }).catch(e => this.log.error('Bot settings failed', e)));
+                    return this._post({
+                        persistent_menu: newMenu
+                    });
+                })
+                .catch(e => this.log.error('Bot settings failed', e))
+        ));
 
         return composer.menu(locale, inputDisabled);
     }

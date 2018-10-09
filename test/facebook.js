@@ -125,9 +125,9 @@ describe('<Facebook>', () => {
 
     });
 
-    describe('#verifyRequest()', () => {
+    describe('#processEvent()', () => {
 
-        it('should do nothing when app secret is not in options', async () => {
+        it('should be able to process event', async () => {
             const processor = new Processor((req, res) => {
                 res.wait(10);
                 res.text(`A: ${req.action()}`);
@@ -139,7 +139,9 @@ describe('<Facebook>', () => {
                     return {
                         recipient_id: 'abc'
                     };
-                } else if (body.message && body.message.text === 'T: text') {
+                }
+
+                if (body.message && body.message.text === 'T: text') {
                     const res = {
                         response: {
                             body: {
@@ -149,8 +151,10 @@ describe('<Facebook>', () => {
                             }
                         }
                     };
+
                     throw res;
                 }
+
                 return {};
             });
 
@@ -204,6 +208,97 @@ describe('<Facebook>', () => {
             const states = Array.from(store.values());
 
             assert.equal(states.length, 2);
+        });
+
+        it('shoud use attachment cache', async () => {
+            const processor = new Processor((req, res) => {
+                res.image('https://goo.gl/img.png', true);
+            });
+
+            const requestLib = sinon.spy(({ body }) => {
+                const attachmentPayload = body.message
+                    && body.message.attachment
+                    && body.message.attachment.payload;
+
+                const attachmentUrl = attachmentPayload
+                    && attachmentPayload.url;
+
+                if (attachmentPayload.is_reusable && attachmentUrl) {
+                    return { attachment_id: 456 };
+                }
+                return {};
+            });
+
+            let storage = null;
+
+            const attachmentStorage = {
+                findAttachmentByUrl (url) {
+                    return Promise.resolve(storage && storage.url === url
+                        ? storage.attachmentId
+                        : null);
+                },
+                saveAttachmentId (url, attachmentId) {
+                    storage = { url, attachmentId };
+                    return Promise.resolve();
+                }
+            };
+
+            const facebook = new Facebook(processor, { pageToken: 'a', requestLib, attachmentStorage });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        message: {
+                            text: 'text'
+                        }
+                    }]
+                }, {
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        message: {
+                            text: 'text'
+                        }
+                    }]
+                }]
+            });
+
+            assert.equal(requestLib.callCount, 2);
+
+            assert.deepStrictEqual(requestLib.firstCall.args[0].body, {
+                recipient: {
+                    id: 'abc'
+                },
+                message: {
+                    attachment: {
+                        type: 'image',
+                        payload: {
+                            url: 'https://goo.gl/img.png',
+                            is_reusable: true
+                        }
+                    }
+                },
+                messaging_type: 'RESPONSE'
+            }, 'first request must match');
+
+
+            assert.deepStrictEqual(requestLib.secondCall.args[0].body, {
+                recipient: {
+                    id: 'abc'
+                },
+                message: {
+                    attachment: {
+                        type: 'image',
+                        payload: {
+                            attachment_id: 456
+                        }
+                    }
+                },
+                messaging_type: 'RESPONSE'
+            }, 'second request must match');
         });
 
     });

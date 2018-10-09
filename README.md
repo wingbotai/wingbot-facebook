@@ -24,20 +24,28 @@ Connector plugin for wingbot chatbot framework
 </dd>
 </dl>
 
+## Typedefs
+
+<dl>
+<dt><a href="#AttachmentCache">AttachmentCache</a> : <code>Object</code></dt>
+<dd></dd>
+</dl>
+
 <a name="Facebook"></a>
 
 ## Facebook
 **Kind**: global class  
 
 * [Facebook](#Facebook)
-    * [new Facebook(processor, options)](#new_Facebook_new)
+    * [new Facebook(processor, options, [senderLogger])](#new_Facebook_new)
     * [.verifyWebhook(queryString)](#Facebook+verifyWebhook) ⇒ <code>string</code>
     * [.verifyRequest(body, headers)](#Facebook+verifyRequest)
+    * [.processMessage(message, senderId, pageId)](#Facebook+processMessage) ⇒ <code>Promise</code>
     * [.processEvent(body)](#Facebook+processEvent) ⇒ <code>Promise.&lt;Array.&lt;{message:Object, pageId:string}&gt;&gt;</code>
 
 <a name="new_Facebook_new"></a>
 
-### new Facebook(processor, options)
+### new Facebook(processor, options, [senderLogger])
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -46,8 +54,9 @@ Connector plugin for wingbot chatbot framework
 | options.pageToken | <code>string</code> | facebook page token |
 | [options.botToken] | <code>string</code> | botToken for webhook verification |
 | [options.appSecret] | <code>string</code> | provide app secret to verify requests |
+| [options.attachmentStorage] | [<code>AttachmentCache</code>](#AttachmentCache) | cache for reusing attachments |
 | [options.requestLib] | <code>function</code> | request library replacement |
-| [options.senderLogger] | <code>console</code> | optional console like chat logger |
+| [senderLogger] | <code>console</code> | optional console like chat logger |
 
 <a name="Facebook+verifyWebhook"></a>
 
@@ -79,6 +88,17 @@ Verify Facebook webhook event
 | --- | --- |
 | body | <code>Buffer</code> \| <code>string</code> | 
 | headers | <code>Object</code> | 
+
+<a name="Facebook+processMessage"></a>
+
+### facebook.processMessage(message, senderId, pageId) ⇒ <code>Promise</code>
+**Kind**: instance method of [<code>Facebook</code>](#Facebook)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| message | <code>Object</code> | wingbot chat event |
+| senderId | <code>string</code> | chat event sender identifier |
+| pageId | <code>string</code> | channel/page identifier |
 
 <a name="Facebook+processEvent"></a>
 
@@ -165,7 +185,7 @@ Sets up the persistent menu
 
 **Example**  
 ```javascript
-const { Settings } = require(''wingbot');
+const { Settings } = require('wingbot');
 
 const settings = new Settings('page-token-string');
 
@@ -307,3 +327,14 @@ bot.use((req, res) => {
     res.text(`Hello ${firstName}!`);
 });
 ```
+<a name="AttachmentCache"></a>
+
+## AttachmentCache : <code>Object</code>
+**Kind**: global typedef  
+**Properties**
+
+| Name | Type |
+| --- | --- |
+| findAttachmentByUrl | <code>function</code> | 
+| saveAttachmentId | <code>function</code> | 
+

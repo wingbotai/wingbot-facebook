@@ -12,6 +12,7 @@ class FacebookSender extends ReturnSender {
      *
      * @param {Object} options
      * @param {string} options.pageToken
+     * @param {{findAttachmentByUrl:Function,saveAttachmentId:Function}} [options.attachmentStorage]
      * @param {string} userId
      * @param {Object} incommingMessage
      * @param {console} [logger] - console like logger
@@ -21,6 +22,8 @@ class FacebookSender extends ReturnSender {
         super(options, userId, incommingMessage, logger);
 
         this._token = options.pageToken;
+
+        this._attachmentStorage = options.attachmentStorage;
 
         this._replaceRecipient = null;
 
@@ -45,9 +48,15 @@ class FacebookSender extends ReturnSender {
 
     _request (data) {
         let uri = this.url;
+        let body = data;
 
         if (data.target_app_id) {
             uri += '/pass_thread_control';
+        } else if (data.take_thread_control) {
+            uri += '/take_thread_control';
+            body = Object.assign({
+                recipient: data.recipient
+            }, data.take_thread_control);
         } else {
             uri += '/messages';
         }
@@ -56,7 +65,7 @@ class FacebookSender extends ReturnSender {
             uri,
             qs: { access_token: this._token },
             method: 'POST',
-            body: data,
+            body,
             json: true
         });
     }
@@ -74,18 +83,68 @@ class FacebookSender extends ReturnSender {
         });
     }
 
+    async _substituteAttachmentFromCache (data) {
+        if (!this._attachmentStorage) {
+            return { data, attachmentUrl: null };
+        }
+
+        const attachmentPayload = data.message
+            && data.message.attachment
+            && data.message.attachment.payload;
+
+        const attachmentUrl = attachmentPayload
+            && attachmentPayload.is_reusable
+            && attachmentPayload.url;
+
+        if (attachmentUrl) {
+            const attachmentId = await this._attachmentStorage
+                .findAttachmentByUrl(attachmentUrl);
+
+            if (attachmentId) {
+                return {
+                    data: Object.assign({}, data, {
+                        message: Object.assign({}, data.message, {
+                            attachment: Object.assign({}, data.message.attachment, {
+                                payload: {
+                                    attachment_id: attachmentId
+                                }
+                            })
+                        })
+                    }),
+                    attachmentUrl
+                };
+            }
+        }
+
+        return { data, attachmentUrl };
+    }
+
+    async _storeAttachmentIdToCache (attachmentUrl, res) {
+        if (!attachmentUrl || !res.attachment_id) {
+            return;
+        }
+
+        await this._attachmentStorage
+            .saveAttachmentId(attachmentUrl, res.attachment_id);
+    }
+
     async _send (payload) {
         if (this._replaceRecipient) {
             Object.assign(payload, this._replaceRecipient);
         }
 
         try {
-            const res = await this._request(payload);
+            const { data, attachmentUrl } = await this._substituteAttachmentFromCache(payload);
+
+            const res = await this._request(data);
+
+            await this._storeAttachmentIdToCache(attachmentUrl, res);
 
             const hasRecipientId = res && typeof res === 'object' && res.recipient_id;
 
             if (hasRecipientId && this._resolveRef) {
                 this._replaceRecipient = {
+                    // @ts-ignore
                     recipient: { id: res.recipient_id }
                 };
                 this._resolveRef({ senderId: res.recipient_id });
