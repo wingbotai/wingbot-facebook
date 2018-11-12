@@ -11,9 +11,11 @@ const PROCESS_EVENTS = [
     'referral',
     'optin',
     'pass_thread_control',
-    'message'
-    // 'request_thread_control',
-    // 'take_thread_control'
+    'message',
+    'request_thread_control',
+    'take_thread_control',
+    'read',
+    'delivery'
 ];
 
 /**
@@ -71,10 +73,11 @@ class Facebook {
      * @param {Buffer|string} body
      * @param {Object} headers
      * @throws {Error} when x-hub-signature does not match body signature
+     * @returns {Promise}
      */
     verifyRequest (body, headers) {
         if (!this._options.appSecret) {
-            return;
+            return Promise.resolve();
         }
 
         const signature = headers['x-hub-signature'] || headers['X-Hub-Signature'];
@@ -93,6 +96,7 @@ class Facebook {
         if (signatureHash !== expectedHash) {
             throw this._getUnauthorizedError('Couldn\'t validate the request signature.');
         }
+        return Promise.resolve();
     }
 
     _processEventsOfSender (senderId, events) {
