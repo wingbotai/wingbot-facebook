@@ -71,43 +71,47 @@ describe('<Facebook>', () => {
 
     describe('#verifyRequest()', () => {
 
-        it('should do nothing when app secret is not in options', () => {
+        it('should do nothing when app secret is not in options', async () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
             const facebook = new Facebook(processor, { pageToken: 'a' });
 
-            const res = facebook.verifyRequest('body', {
+            const res = await facebook.verifyRequest('body', {
                 'x-hub-signature': 'any'
             });
 
             assert.strictEqual(res, undefined);
         });
 
-        it('should do nothing when app secret is not in options', () => {
+        it('should do nothing when app secret is not in options', async () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
             const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a' });
 
-            const res = facebook.verifyRequest('body', {
+            const res = await facebook.verifyRequest('body', {
                 'x-hub-signature': 'hash=fb22411c05e5748702d3949efbef160bf1bdc11a'
             });
 
             assert.strictEqual(res, undefined);
         });
 
-        it('should thow error when signature header is missing', () => {
+        it('should thow error when signature header is missing', async () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
             const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a' });
 
-            assert.throws(() => {
-                facebook.verifyRequest('body', {
+            let err = null;
+            try {
+                await facebook.verifyRequest('body', {
                     // x-hub-signature': 'hash=fb22411c05e5748702d3949efbef160bf1bdc11a'
                 });
-            });
+            } catch (e) {
+                err = e;
+            }
+            assert(err instanceof Error);
         });
 
         it('should thow error when signature header is not matching', () => {
@@ -186,28 +190,71 @@ describe('<Facebook>', () => {
                             watermark: 1523996083263,
                             seq: 46
                         }
+                    }, {
+                        sender: { id: 'abc' },
+                        request_thread_control: {}
+                    }, {
+                        sender: { id: 'abc' },
+                        take_thread_control: {}
+                    }, {
+                        sender: { id: 'abc' },
+                        pass_thread_control: {}
                     }]
                 }]
             });
 
             assert.equal(requestLib.callCount, 6);
 
-            assert.deepStrictEqual(res, [{
-                pageId: 'pid',
-                message: {
-                    sender: { id: 'abc' },
-                    read: {
-                        watermark: 1523996083263,
-                        seq: 46
-                    }
-                }
-            }]);
+            assert.deepStrictEqual(res, [], 'there should be no unprocessed event');
 
             const { store } = processor.stateStorage;
 
             const states = Array.from(store.values());
 
             assert.equal(states.length, 2);
+        });
+
+        it('transforms handover events to postbacks', async () => {
+            const actions = [];
+            const processor = new Processor((req, res) => {
+                actions.push([req.action(), req.action(true)]);
+                res.text('ha');
+            });
+
+            const requestLib = sinon.spy(({ body }) => ({ body }));
+
+            const facebook = new Facebook(processor, {
+                pageToken: 'a',
+                requestLib,
+                passThreadAction: 'passThread',
+                takeThreadAction: 'takeThread',
+                requestThreadAction: 'requestThread'
+            });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        pass_thread_control: { a: 1 }
+                    }, {
+                        sender: { id: 'abc' },
+                        request_thread_control: { b: 2 }
+                    }, {
+                        sender: { id: 'abc' },
+                        take_thread_control: { c: 3 }
+                    }]
+                }]
+            });
+
+            assert.equal(requestLib.callCount, 3);
+
+            assert.deepEqual(actions, [
+                ['passThread', { a: 1 }],
+                ['requestThread', { b: 2 }],
+                ['takeThread', { c: 3 }]
+            ]);
         });
 
         it('shoud use attachment cache', async () => {

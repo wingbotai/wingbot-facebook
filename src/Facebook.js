@@ -4,6 +4,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { Request } = require('wingbot');
 const FacebookSender = require('./FacebookSender');
 
 const PROCESS_EVENTS = [
@@ -33,6 +34,9 @@ class Facebook {
      * @param {string} options.pageToken - facebook page token
      * @param {string} [options.botToken] - botToken for webhook verification
      * @param {string} [options.appSecret] - provide app secret to verify requests
+     * @param {string} [options.passThreadAction] - trigger this action for pass thread event
+     * @param {string} [options.takeThreadAction] - trigger this action for take thread event
+     * @param {string} [options.requestThreadAction] - trigger this action when thread request
      * @param {AttachmentCache} [options.attachmentStorage] - cache for reusing attachments
      * @param {Function} [options.requestLib] - request library replacement
      * @param {console} [senderLogger] - optional console like chat logger
@@ -112,7 +116,7 @@ class Facebook {
      * @param {Object} message - wingbot chat event
      * @param {string} senderId - chat event sender identifier
      * @param {string} pageId - channel/page identifier
-     * @returns {Promise}
+     * @returns {Promise<{status:number}>}
      */
     processMessage (message, senderId, pageId) {
         const options = this._options;
@@ -125,7 +129,54 @@ class Facebook {
             options.requestLib
         );
 
-        return this.processor.processMessage(message, pageId, messageSender);
+        let event = message;
+
+        if (message.take_thread_control) {
+            if (this._options.takeThreadAction) {
+                event = Request.postBack(
+                    senderId,
+                    this._options.takeThreadAction,
+                    message.take_thread_control,
+                    null,
+                    null,
+                    message.timestamp
+                );
+            } else {
+                event = null;
+            }
+        } else if (message.pass_thread_control) {
+            if (this._options.passThreadAction) {
+                event = Request.postBack(
+                    senderId,
+                    this._options.passThreadAction,
+                    message.pass_thread_control,
+                    null,
+                    null,
+                    message.timestamp
+                );
+            } else {
+                event = null;
+            }
+        } else if (message.request_thread_control) {
+            if (this._options.requestThreadAction) {
+                event = Request.postBack(
+                    senderId,
+                    this._options.requestThreadAction,
+                    message.request_thread_control,
+                    null,
+                    null,
+                    message.timestamp
+                );
+            } else {
+                event = null;
+            }
+        }
+
+        if (!event) {
+            return Promise.resolve({ status: 201 });
+        }
+
+        return this.processor.processMessage(event, pageId, messageSender);
     }
 
     /**
