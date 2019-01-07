@@ -107,7 +107,7 @@ class Settings {
         }
 
         return this._delete({
-            fields: ['get_started']
+            fields: ['get_started', 'persistent_menu']
         });
     }
 
