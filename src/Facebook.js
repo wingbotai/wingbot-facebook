@@ -32,6 +32,7 @@ class Facebook {
      * @param {Processor} processor
      * @param {Object} options
      * @param {string} options.pageToken - facebook page token
+     * @param {string} options.appId - facebook app id
      * @param {string} [options.botToken] - botToken for webhook verification
      * @param {string} [options.appSecret] - provide app secret to verify requests
      * @param {string} [options.passThreadAction] - trigger this action for pass thread event
@@ -132,7 +133,10 @@ class Facebook {
         let event = message;
 
         if (message.take_thread_control) {
-            if (this._options.takeThreadAction) {
+            const takeToSelf = message.take_thread_control
+                .previous_owner_app_id === this._options.appId;
+
+            if (this._options.takeThreadAction && !takeToSelf) {
                 event = Request.postBack(
                     senderId,
                     this._options.takeThreadAction,
