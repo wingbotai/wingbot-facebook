@@ -134,9 +134,12 @@ class Facebook {
 
         if (message.take_thread_control) {
             const takeFromSelf = `${message.take_thread_control
-                .previous_owner_app_id}` === `${this._options.appId}`;
+                .previous_owner_app_id}` === this._options.appId;
 
-            if (this._options.takeThreadAction && takeFromSelf) {
+            const appIdInMetaData = message.take_thread_control
+                .metadata === this._options.appId;
+
+            if (this._options.takeThreadAction && takeFromSelf && !appIdInMetaData) {
                 event = Request.postBack(
                     senderId,
                     this._options.takeThreadAction,
