@@ -39,8 +39,8 @@ Connector plugin for wingbot chatbot framework
 * [Facebook](#Facebook)
     * [new Facebook(processor, options, [senderLogger])](#new_Facebook_new)
     * [.verifyWebhook(queryString)](#Facebook+verifyWebhook) ⇒ <code>string</code>
-    * [.verifyRequest(body, headers)](#Facebook+verifyRequest)
-    * [.processMessage(message, senderId, pageId)](#Facebook+processMessage) ⇒ <code>Promise</code>
+    * [.verifyRequest(body, headers)](#Facebook+verifyRequest) ⇒ <code>Promise</code>
+    * [.processMessage(message, senderId, pageId)](#Facebook+processMessage) ⇒ <code>Promise.&lt;{status:number}&gt;</code>
     * [.processEvent(body)](#Facebook+processEvent) ⇒ <code>Promise.&lt;Array.&lt;{message:Object, pageId:string}&gt;&gt;</code>
 
 <a name="new_Facebook_new"></a>
@@ -52,8 +52,12 @@ Connector plugin for wingbot chatbot framework
 | processor | <code>Processor</code> |  |
 | options | <code>Object</code> |  |
 | options.pageToken | <code>string</code> | facebook page token |
+| options.appId | <code>string</code> | facebook app id |
 | [options.botToken] | <code>string</code> | botToken for webhook verification |
 | [options.appSecret] | <code>string</code> | provide app secret to verify requests |
+| [options.passThreadAction] | <code>string</code> | trigger this action for pass thread event |
+| [options.takeThreadAction] | <code>string</code> | trigger this action for take thread event |
+| [options.requestThreadAction] | <code>string</code> | trigger this action when thread request |
 | [options.attachmentStorage] | [<code>AttachmentCache</code>](#AttachmentCache) | cache for reusing attachments |
 | [options.requestLib] | <code>function</code> | request library replacement |
 | [senderLogger] | <code>console</code> | optional console like chat logger |
@@ -75,7 +79,7 @@ Verifies Bots webhook against Facebook
 
 <a name="Facebook+verifyRequest"></a>
 
-### facebook.verifyRequest(body, headers)
+### facebook.verifyRequest(body, headers) ⇒ <code>Promise</code>
 Verify Facebook webhook event
 
 **Kind**: instance method of [<code>Facebook</code>](#Facebook)  
@@ -91,7 +95,7 @@ Verify Facebook webhook event
 
 <a name="Facebook+processMessage"></a>
 
-### facebook.processMessage(message, senderId, pageId) ⇒ <code>Promise</code>
+### facebook.processMessage(message, senderId, pageId) ⇒ <code>Promise.&lt;{status:number}&gt;</code>
 **Kind**: instance method of [<code>Facebook</code>](#Facebook)  
 
 | Param | Type | Description |
