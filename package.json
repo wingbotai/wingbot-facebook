@@ -1,6 +1,6 @@
 {
   "name": "wingbot-facebook",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Facebook messenger plugin for wingbot",
   "main": "src/main.js",
   "scripts": {

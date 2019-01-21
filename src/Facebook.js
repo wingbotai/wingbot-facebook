@@ -133,8 +133,8 @@ class Facebook {
         let event = message;
 
         if (message.take_thread_control) {
-            const takeToSelf = message.take_thread_control
-                .previous_owner_app_id === this._options.appId;
+            const takeToSelf = `${message.take_thread_control
+                .previous_owner_app_id}` === `${this._options.appId}`;
 
             if (this._options.takeThreadAction && !takeToSelf) {
                 event = Request.postBack(
