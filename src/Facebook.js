@@ -133,11 +133,11 @@ class Facebook {
         let event = message;
 
         if (message.take_thread_control) {
-            const takeFromSelf = `${message.take_thread_control
-                .previous_owner_app_id}` === this._options.appId;
+            const takeFromSelf = !this._options.appId
+                || `${message.take_thread_control.previous_owner_app_id}` === this._options.appId;
 
-            const appIdInMetaData = message.take_thread_control
-                .metadata === this._options.appId;
+            const appIdInMetaData = this._options.appId
+                && message.take_thread_control.metadata === this._options.appId;
 
             if (this._options.takeThreadAction && takeFromSelf && !appIdInMetaData) {
                 event = Request.postBack(
@@ -204,19 +204,27 @@ class Facebook {
         body.entry.forEach((event) => {
             const pageId = event.id;
 
-            event.messaging.forEach((message) => {
-
-                if (PROCESS_EVENTS.some(e => typeof message[e] !== 'undefined')) {
-                    const senderId = (message.sender && message.sender.id) || null;
-
-                    if (!eventsBySenderId.has(senderId)) {
-                        eventsBySenderId.set(senderId, []);
+            if (Array.isArray(event.standby)) {
+                event.standby.forEach((message) => {
+                    // exclude texts
+                    if (message.text) {
+                        return;
                     }
 
-                    eventsBySenderId.get(senderId).push({ message, pageId });
-                } else {
-                    otherEvents.push({ message, pageId });
-                }
+                    console.log('EV:', JSON.stringify(message)); // eslint-disable-line no-console
+
+                    this._processMessagingArrayItem(message, pageId, eventsBySenderId, otherEvents);
+                });
+            }
+
+
+            if (!Array.isArray(event.messaging)) {
+                return;
+            }
+
+            event.messaging.forEach((message) => {
+
+                this._processMessagingArrayItem(message, pageId, eventsBySenderId, otherEvents);
             });
         });
 
@@ -226,6 +234,28 @@ class Facebook {
         await Promise.all(process);
 
         return otherEvents;
+    }
+
+    _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents) {
+        if (PROCESS_EVENTS.some(e => typeof message[e] !== 'undefined')) {
+            let senderId = null;
+
+            if (message.sender && message.sender.id) {
+                senderId = message.sender.id;
+            } else if (message.optin && message.optin.user_ref) {
+                senderId = message.optin.user_ref;
+                // simlate the sender id
+                Object.assign(message, { sender: { id: senderId } });
+            }
+
+            if (!eventsBySenderId.has(senderId)) {
+                eventsBySenderId.set(senderId, []);
+            }
+
+            eventsBySenderId.get(senderId).push({ message, pageId });
+        } else {
+            otherEvents.push({ message, pageId });
+        }
     }
 }
 

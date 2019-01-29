@@ -29,13 +29,11 @@ class FacebookSender extends ReturnSender {
 
         this._userRef = incommingMessage.optin && incommingMessage.optin.user_ref;
 
-        if (this._userRef) {
+        if (incommingMessage.optin) {
             this._replaceRecipient = {
                 recipient: { user_ref: this._userRef }
             };
         }
-
-        this._gotUserId = null;
 
         this.url = 'https://graph.facebook.com/v2.8/me';
 
@@ -57,6 +55,12 @@ class FacebookSender extends ReturnSender {
             body = Object.assign({
                 recipient: data.recipient
             }, data.take_thread_control);
+
+        } else if (data.request_thread_control) {
+            uri += '/request_thread_control';
+            body = Object.assign({
+                recipient: data.recipient
+            }, data.request_thread_control);
         } else {
             uri += '/messages';
         }
@@ -140,16 +144,6 @@ class FacebookSender extends ReturnSender {
 
             await this._storeAttachmentIdToCache(attachmentUrl, res);
 
-            const hasRecipientId = res && typeof res === 'object' && res.recipient_id;
-
-            if (hasRecipientId && this._resolveRef) {
-                this._replaceRecipient = {
-                    // @ts-ignore
-                    recipient: { id: res.recipient_id }
-                };
-                this._resolveRef({ senderId: res.recipient_id });
-            }
-
             return res;
         } catch (e) {
             if (this._resolveRef) {
@@ -160,28 +154,32 @@ class FacebookSender extends ReturnSender {
         }
     }
 
-    send (payload) {
-        if (payload.recipient && this._userRef && this._gotUserId === null) {
-            // we will be waiting for ref
-            this._gotUserId = new Promise((resolve) => {
-                this._resolveRef = (data = null) => {
-                    this._resolveRef = null;
-                    resolve(data);
-                };
-            });
-        }
-        super.send(payload);
-    }
 
-    async modifyStateBeforeStore () {
-        if (this._userRef && !this._gotUserId) {
-            throw new Error('No text message was sent, when optin arrived!');
+    async modifyStateAfterLoad (state, processor) {
+        if (this._incommingMessage.prior_message) {
+            const { identifier } = this._incommingMessage.prior_message;
+
+            const refState = await processor.stateStorage.getState(identifier, state.pageId);
+
+            if (refState) {
+                return {
+                    state: refState.state
+                };
+            }
         }
-        if (this._gotUserId) {
-            return this._gotUserId;
+        if (state._replaceRecipient) {
+            this._replaceRecipient = state._replaceRecipient;
         }
         return null;
     }
+
+    async modifyStateBeforeStore () {
+        if (this._replaceRecipient) {
+            return { _replaceRecipient: this._replaceRecipient };
+        }
+        return null;
+    }
+
 
 }
 

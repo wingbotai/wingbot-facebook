@@ -174,7 +174,6 @@ describe('<Facebook>', () => {
                             payload: 'action'
                         }
                     }, {
-                        sender: { id: 'xyz' },
                         optin: {
                             ref: 'action',
                             user_ref: 'ref'
