@@ -12,6 +12,7 @@ const API_VERSION = 'v2.8';
  * User loader middleware
  *
  * @param {string} pageToken
+ * @param {console} [logger]
  * @example
  * const { userLoader } = require('wingbot-facebook');
  *
@@ -29,7 +30,7 @@ const API_VERSION = 'v2.8';
  *     res.text(`Hello ${firstName}!`);
  * });
  */
-function userLoader (pageToken) {
+function userLoader (pageToken, logger = console) {
     if (!pageToken) {
         return () => Router.CONTINUE;
     }
@@ -41,12 +42,18 @@ function userLoader (pageToken) {
             return Router.CONTINUE;
         }
 
-        const response = await request({
-            uri: `https://graph.facebook.com/${API_VERSION}/${req.senderId}`,
-            qs: { access_token: pageToken },
-            method: 'GET',
-            json: true
-        });
+        let response;
+        try {
+            response = await request({
+                uri: `https://graph.facebook.com/${API_VERSION}/${req.senderId}`,
+                qs: { access_token: pageToken },
+                method: 'GET',
+                json: true
+            });
+        } catch (e) {
+            response = null;
+            logger.log('no user profile found', { senderId: req.senderId });
+        }
 
         const user = response ? {
             firstName: response.first_name,

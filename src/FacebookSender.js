@@ -163,7 +163,9 @@ class FacebookSender extends ReturnSender {
 
             if (refState) {
                 return {
-                    state: refState.state
+                    state: Object.assign({}, refState.state, {
+                        _mergedFromSenderId: identifier
+                    })
                 };
             }
         }
