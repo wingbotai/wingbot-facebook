@@ -19,7 +19,7 @@ Connector plugin for wingbot chatbot framework
 ## Functions
 
 <dl>
-<dt><a href="#userLoader">userLoader(pageToken)</a></dt>
+<dt><a href="#userLoader">userLoader(pageToken, [logger])</a></dt>
 <dd><p>User loader middleware</p>
 </dd>
 </dl>
@@ -127,6 +127,7 @@ Process Facebook request
         * [.greeting([text])](#Settings+greeting) ⇒ <code>Promise</code>
         * [.getStartedButton([payload])](#Settings+getStartedButton) ⇒ <code>Promise</code>
         * [.whitelistDomain(domains)](#Settings+whitelistDomain) ⇒ <code>Promise</code>
+        * [.noMenu()](#Settings+noMenu) ⇒ <code>Promise</code>
         * [.menu([locale], [inputDisabled])](#Settings+menu) ⇒ [<code>MenuComposer</code>](#MenuComposer)
     * _static_
         * [.Settings](#Settings.Settings)
@@ -175,6 +176,12 @@ Useful for using facebook extension in webviews
 | --- | --- |
 | domains | <code>string</code> \| <code>Array.&lt;string&gt;</code> | 
 
+<a name="Settings+noMenu"></a>
+
+### settings.noMenu() ⇒ <code>Promise</code>
+Drops the menu
+
+**Kind**: instance method of [<code>Settings</code>](#Settings)  
 <a name="Settings+menu"></a>
 
 ### settings.menu([locale], [inputDisabled]) ⇒ [<code>MenuComposer</code>](#MenuComposer)
@@ -304,7 +311,7 @@ Finish the menu for the locale and starts a new menu
 
 <a name="userLoader"></a>
 
-## userLoader(pageToken)
+## userLoader(pageToken, [logger])
 User loader middleware
 
 **Kind**: global function  
@@ -312,6 +319,7 @@ User loader middleware
 | Param | Type |
 | --- | --- |
 | pageToken | <code>string</code> | 
+| [logger] | <code>console</code> | 
 
 **Example**  
 ```javascript
