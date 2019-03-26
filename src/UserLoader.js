@@ -6,7 +6,7 @@
 const request = require('request-promise-native');
 const { Router } = require('wingbot');
 
-const API_VERSION = 'v2.8';
+const API_VERSION = 'v3.2';
 
 /**
  * User loader middleware

@@ -31,7 +31,7 @@ class Settings {
 
     _post (data) {
         return this.request({
-            uri: 'https://graph.facebook.com/v2.8/me/messenger_profile',
+            uri: 'https://graph.facebook.com/v3.2/me/messenger_profile',
             qs: { access_token: this.token },
             method: 'POST',
             json: data
@@ -44,7 +44,7 @@ class Settings {
             queryString.fields = fields.join(',');
         }
         return request({
-            uri: 'https://graph.facebook.com/v2.8/me/messenger_profile',
+            uri: 'https://graph.facebook.com/v3.2/me/messenger_profile',
             qs: queryString,
             method: 'GET',
             json: true
@@ -56,7 +56,7 @@ class Settings {
 
     _delete (data) {
         return request({
-            uri: 'https://graph.facebook.com/v2.8/me/messenger_profile',
+            uri: 'https://graph.facebook.com/v3.2/me/messenger_profile',
             qs: { access_token: this.token },
             method: 'DELETE',
             json: data
@@ -132,6 +132,17 @@ class Settings {
 
         return this._post({
             whitelisted_domains: list
+        });
+    }
+
+    /**
+     * Drops the menu
+     *
+     * @returns {Promise}
+     */
+    noMenu () {
+        return this._delete({
+            fields: ['persistent_menu']
         });
     }
 

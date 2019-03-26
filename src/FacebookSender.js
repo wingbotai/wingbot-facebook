@@ -35,7 +35,7 @@ class FacebookSender extends ReturnSender {
             };
         }
 
-        this.url = 'https://graph.facebook.com/v2.8/me';
+        this.url = 'https://graph.facebook.com/v3.2/me';
 
         this.waits = true;
 
