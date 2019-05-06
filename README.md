@@ -58,6 +58,7 @@ Connector plugin for wingbot chatbot framework
 | [options.passThreadAction] | <code>string</code> | trigger this action for pass thread event |
 | [options.takeThreadAction] | <code>string</code> | trigger this action for take thread event |
 | [options.requestThreadAction] | <code>string</code> | trigger this action when thread request |
+| [options.apiUrl] | <code>string</code> | override Facebook API url |
 | [options.attachmentStorage] | [<code>AttachmentCache</code>](#AttachmentCache) | cache for reusing attachments |
 | [options.requestLib] | <code>function</code> | request library replacement |
 | [senderLogger] | <code>console</code> | optional console like chat logger |
