@@ -38,6 +38,7 @@ class Facebook {
      * @param {string} [options.passThreadAction] - trigger this action for pass thread event
      * @param {string} [options.takeThreadAction] - trigger this action for take thread event
      * @param {string} [options.requestThreadAction] - trigger this action when thread request
+     * @param {string} [options.apiUrl] - override Facebook API url
      * @param {AttachmentCache} [options.attachmentStorage] - cache for reusing attachments
      * @param {Function} [options.requestLib] - request library replacement
      * @param {console} [senderLogger] - optional console like chat logger

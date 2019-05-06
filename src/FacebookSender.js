@@ -12,6 +12,7 @@ class FacebookSender extends ReturnSender {
      *
      * @param {Object} options
      * @param {string} options.pageToken
+     * @param {string} [options.apiUrl] - override the API url
      * @param {{findAttachmentByUrl:Function,saveAttachmentId:Function}} [options.attachmentStorage]
      * @param {string} userId
      * @param {Object} incommingMessage
@@ -35,7 +36,9 @@ class FacebookSender extends ReturnSender {
             };
         }
 
-        this.url = 'https://graph.facebook.com/v3.2/me';
+        this.url = options.apiUrl || 'https://graph.facebook.com/v3.2/me';
+
+        this.useStaticUrl = !!options.apiUrl;
 
         this.waits = true;
 
@@ -48,7 +51,9 @@ class FacebookSender extends ReturnSender {
         let uri = this.url;
         let body = data;
 
-        if (data.target_app_id) {
+        if (this.useStaticUrl) {
+            // do nothing
+        } else if (data.target_app_id) {
             uri += '/pass_thread_control';
         } else if (data.take_thread_control) {
             uri += '/take_thread_control';
