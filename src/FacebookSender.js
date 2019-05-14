@@ -83,7 +83,11 @@ class FacebookSender extends ReturnSender {
         if (!e.response || !e.response.body || !e.response.body.error) {
             return;
         }
-        if (e.response.statusCode !== 403 || e.response.body.error.code !== 200) {
+
+        const hasBeeenBlocked = e.response.body.error.code === 200
+            || e.response.body.error.code === 10;
+
+        if (!hasBeeenBlocked) {
             return;
         }
 
