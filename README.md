@@ -2,6 +2,28 @@
 
 Connector plugin for wingbot chatbot framework
 
+## Advanced features
+
+### Transfering action as a metadata of handover event
+
+You can include a full JSON Action string to run a certain interaction in your bot using metadata in a handover event.
+
+```json
+{
+  "sender":{
+    "id":"<PSID>"
+  },
+  "recipient":{
+    "id":"<PAGE_ID>"
+  },
+  "timestamp":1458692752478,
+  "pass_thread_control":{
+    "new_owner_app_id":"123456789",
+    "metadata":"{\"action\":\"your-action\",\"data\":{}}"
+  }
+}
+```
+
 -----------------
 
 # API
@@ -34,7 +56,7 @@ Connector plugin for wingbot chatbot framework
 <a name="Facebook"></a>
 
 ## Facebook
-**Kind**: global class  
+**Kind**: global class
 
 * [Facebook](#Facebook)
     * [new Facebook(processor, options, [senderLogger])](#new_Facebook_new)
@@ -68,7 +90,7 @@ Connector plugin for wingbot chatbot framework
 ### facebook.verifyWebhook(queryString) ⇒ <code>string</code>
 Verifies Bots webhook against Facebook
 
-**Kind**: instance method of [<code>Facebook</code>](#Facebook)  
+**Kind**: instance method of [<code>Facebook</code>](#Facebook)
 **Throws**:
 
 - <code>Error</code> when the request is invalid
@@ -76,14 +98,14 @@ Verifies Bots webhook against Facebook
 
 | Param | Type |
 | --- | --- |
-| queryString | <code>Object</code> | 
+| queryString | <code>Object</code> |
 
 <a name="Facebook+verifyRequest"></a>
 
 ### facebook.verifyRequest(body, headers) ⇒ <code>Promise</code>
 Verify Facebook webhook event
 
-**Kind**: instance method of [<code>Facebook</code>](#Facebook)  
+**Kind**: instance method of [<code>Facebook</code>](#Facebook)
 **Throws**:
 
 - <code>Error</code> when x-hub-signature does not match body signature
@@ -91,13 +113,13 @@ Verify Facebook webhook event
 
 | Param | Type |
 | --- | --- |
-| body | <code>Buffer</code> \| <code>string</code> | 
-| headers | <code>Object</code> | 
+| body | <code>Buffer</code> \| <code>string</code> |
+| headers | <code>Object</code> |
 
 <a name="Facebook+processMessage"></a>
 
 ### facebook.processMessage(message, senderId, pageId) ⇒ <code>Promise.&lt;{status:number}&gt;</code>
-**Kind**: instance method of [<code>Facebook</code>](#Facebook)  
+**Kind**: instance method of [<code>Facebook</code>](#Facebook)
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -110,8 +132,8 @@ Verify Facebook webhook event
 ### facebook.processEvent(body) ⇒ <code>Promise.&lt;Array.&lt;{message:Object, pageId:string}&gt;&gt;</code>
 Process Facebook request
 
-**Kind**: instance method of [<code>Facebook</code>](#Facebook)  
-**Returns**: <code>Promise.&lt;Array.&lt;{message:Object, pageId:string}&gt;&gt;</code> - - unprocessed events  
+**Kind**: instance method of [<code>Facebook</code>](#Facebook)
+**Returns**: <code>Promise.&lt;Array.&lt;{message:Object, pageId:string}&gt;&gt;</code> - - unprocessed events
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -120,7 +142,7 @@ Process Facebook request
 <a name="Settings"></a>
 
 ## Settings
-**Kind**: global class  
+**Kind**: global class
 
 * [Settings](#Settings)
     * [new Settings()](#new_Settings_new)
@@ -144,7 +166,7 @@ Utility, which helps us to set up chatbot behavior
 ### settings.greeting([text]) ⇒ <code>Promise</code>
 Sets or clears bot's greeting
 
-**Kind**: instance method of [<code>Settings</code>](#Settings)  
+**Kind**: instance method of [<code>Settings</code>](#Settings)
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -155,13 +177,13 @@ Sets or clears bot's greeting
 ### settings.getStartedButton([payload]) ⇒ <code>Promise</code>
 Sets up the Get Started Button
 
-**Kind**: instance method of [<code>Settings</code>](#Settings)  
+**Kind**: instance method of [<code>Settings</code>](#Settings)
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [payload] | <code>string</code> \| <code>Object</code> | <code>false</code> | leave blank to remove button, or provide the action |
 
-**Example**  
+**Example**
 ```javascript
 const settings = new Settings(config.facebook.pageToken);
 settings.getStartedButton('/start'); // just an action
@@ -171,31 +193,31 @@ settings.getStartedButton('/start'); // just an action
 ### settings.whitelistDomain(domains) ⇒ <code>Promise</code>
 Useful for using facebook extension in webviews
 
-**Kind**: instance method of [<code>Settings</code>](#Settings)  
+**Kind**: instance method of [<code>Settings</code>](#Settings)
 
 | Param | Type |
 | --- | --- |
-| domains | <code>string</code> \| <code>Array.&lt;string&gt;</code> | 
+| domains | <code>string</code> \| <code>Array.&lt;string&gt;</code> |
 
 <a name="Settings+noMenu"></a>
 
 ### settings.noMenu() ⇒ <code>Promise</code>
 Drops the menu
 
-**Kind**: instance method of [<code>Settings</code>](#Settings)  
+**Kind**: instance method of [<code>Settings</code>](#Settings)
 <a name="Settings+menu"></a>
 
 ### settings.menu([locale], [inputDisabled]) ⇒ [<code>MenuComposer</code>](#MenuComposer)
 Sets up the persistent menu
 
-**Kind**: instance method of [<code>Settings</code>](#Settings)  
+**Kind**: instance method of [<code>Settings</code>](#Settings)
 
 | Param | Type | Default |
 | --- | --- | --- |
-| [locale] | <code>string</code> | <code>&quot;default&quot;</code> | 
-| [inputDisabled] | <code>boolean</code> | <code>false</code> | 
+| [locale] | <code>string</code> | <code>&quot;default&quot;</code> |
+| [inputDisabled] | <code>boolean</code> | <code>false</code> |
 
-**Example**  
+**Example**
 ```javascript
 const { Settings } = require('wingbot');
 
@@ -217,7 +239,7 @@ settings
 <a name="Settings.Settings"></a>
 
 ### Settings.Settings
-**Kind**: static class of [<code>Settings</code>](#Settings)  
+**Kind**: static class of [<code>Settings</code>](#Settings)
 <a name="new_Settings.Settings_new"></a>
 
 #### new Settings(token, [log], [req])
@@ -233,7 +255,7 @@ Creates an instance of Settings.
 <a name="MenuComposer"></a>
 
 ## MenuComposer
-**Kind**: global class  
+**Kind**: global class
 
 * [MenuComposer](#MenuComposer)
     * [new MenuComposer(onDone, [isTopLevel])](#new_MenuComposer_new)
@@ -249,46 +271,46 @@ Creates an instance of Settings.
 
 | Param | Type | Default |
 | --- | --- | --- |
-| onDone | <code>function</code> |  | 
-| [isTopLevel] | <code>boolean</code> | <code>true</code> | 
+| onDone | <code>function</code> |  |
+| [isTopLevel] | <code>boolean</code> | <code>true</code> |
 
 <a name="MenuComposer+addPostBack"></a>
 
 ### menuComposer.addPostBack(title, action, [data]) ⇒ <code>this</code>
 Add postback to menu
 
-**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)
 
 | Param | Type |
 | --- | --- |
-| title | <code>string</code> | 
-| action | <code>string</code> | 
-| [data] | <code>Object</code> | 
+| title | <code>string</code> |
+| action | <code>string</code> |
+| [data] | <code>Object</code> |
 
 <a name="MenuComposer+addUrl"></a>
 
 ### menuComposer.addUrl(title, url, [hasExtension], [webviewHeight]) ⇒ <code>this</code>
 Add webview to menu
 
-**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)
 
 | Param | Type | Default |
 | --- | --- | --- |
-| title | <code>string</code> |  | 
-| url | <code>string</code> |  | 
-| [hasExtension] | <code>boolean</code> | <code>false</code> | 
-| [webviewHeight] | <code>string</code> | <code>null</code> | 
+| title | <code>string</code> |  |
+| url | <code>string</code> |  |
+| [hasExtension] | <code>boolean</code> | <code>false</code> |
+| [webviewHeight] | <code>string</code> | <code>null</code> |
 
 <a name="MenuComposer+addNested"></a>
 
 ### menuComposer.addNested(title) ⇒ [<code>MenuComposer</code>](#MenuComposer)
 Add Nested menu component
 
-**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)
 
 | Param | Type |
 | --- | --- |
-| title | <code>string</code> | 
+| title | <code>string</code> |
 
 <a name="MenuComposer+done"></a>
 
@@ -297,32 +319,32 @@ Finish the menu
 
 Last call of "done" returns a promise
 
-**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)
 <a name="MenuComposer+menu"></a>
 
 ### menuComposer.menu([locale], [inputDisabled]) ⇒ [<code>MenuComposer</code>](#MenuComposer)
 Finish the menu for the locale and starts a new menu
 
-**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)  
+**Kind**: instance method of [<code>MenuComposer</code>](#MenuComposer)
 
 | Param | Type | Default |
 | --- | --- | --- |
-| [locale] | <code>string</code> | <code>&quot;default&quot;</code> | 
-| [inputDisabled] | <code>boolean</code> | <code>false</code> | 
+| [locale] | <code>string</code> | <code>&quot;default&quot;</code> |
+| [inputDisabled] | <code>boolean</code> | <code>false</code> |
 
 <a name="userLoader"></a>
 
 ## userLoader(pageToken, [logger])
 User loader middleware
 
-**Kind**: global function  
+**Kind**: global function
 
 | Param | Type |
 | --- | --- |
-| pageToken | <code>string</code> | 
-| [logger] | <code>console</code> | 
+| pageToken | <code>string</code> |
+| [logger] | <code>console</code> |
 
-**Example**  
+**Example**
 ```javascript
 const { userLoader } = require('wingbot-facebook');
 
@@ -343,11 +365,11 @@ bot.use((req, res) => {
 <a name="AttachmentCache"></a>
 
 ## AttachmentCache : <code>Object</code>
-**Kind**: global typedef  
+**Kind**: global typedef
 **Properties**
 
 | Name | Type |
 | --- | --- |
-| findAttachmentByUrl | <code>function</code> | 
-| saveAttachmentId | <code>function</code> | 
+| findAttachmentByUrl | <code>function</code> |
+| saveAttachmentId | <code>function</code> |
 

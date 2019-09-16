@@ -113,6 +113,37 @@ class Facebook {
         );
     }
 
+    _actionFromThreadControlMetadata (event) {
+        let metadata = null;
+        if (event.pass_thread_control && typeof event.pass_thread_control.metadata === 'string') {
+            ({ metadata } = event.pass_thread_control);
+        } else if (event.take_thread_control && typeof event.take_thread_control.metadata === 'string') {
+            ({ metadata } = event.take_thread_control);
+        } else if (event.request_thread_control && typeof event.request_thread_control.metadata === 'string') {
+            ({ metadata } = event.request_thread_control);
+        }
+
+        if (!metadata || !metadata.match(/^\{".+\}$/)) {
+            return null;
+        }
+
+        try {
+            const res = JSON.parse(metadata);
+
+            if (typeof res.action !== 'string'
+                || !['undefined', 'object'].includes(typeof res.data)) {
+
+                return null;
+            }
+
+            const { action, data = {} } = res;
+
+            return { action, data };
+        } catch (e) {
+            return null;
+        }
+    }
+
     /**
      *
      * @param {Object} message - wingbot chat event
@@ -133,7 +164,18 @@ class Facebook {
 
         let event = message;
 
-        if (message.take_thread_control) {
+        const passThreadAction = this._actionFromThreadControlMetadata(message);
+
+        if (passThreadAction) {
+            event = Request.postBack(
+                senderId,
+                passThreadAction.action,
+                passThreadAction.data,
+                null,
+                null,
+                message.timestamp
+            );
+        } else if (message.take_thread_control) {
             const takeFromSelf = !this._options.appId
                 || `${message.take_thread_control.previous_owner_app_id}` === this._options.appId;
 

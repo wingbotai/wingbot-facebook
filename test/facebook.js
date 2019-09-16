@@ -256,6 +256,85 @@ describe('<Facebook>', () => {
             ]);
         });
 
+        it('transforms string metadata to actions', async () => {
+            const actions = [];
+            const processor = new Processor((req, res) => {
+                actions.push([req.action(), req.action(true)]);
+                res.text('ha');
+            });
+
+            const requestLib = sinon.spy(({ body }) => ({ body }));
+
+            const facebook = new Facebook(processor, {
+                pageToken: 'a',
+                requestLib,
+                passThreadAction: 'passThread',
+                takeThreadAction: 'takeThread',
+                requestThreadAction: 'requestThread'
+            });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: '{"action":"ahoj"}'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: {}
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        request_thread_control: {
+                            metadata: 'text'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        request_thread_control: {
+                            metadata: {}
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        request_thread_control: {
+                            metadata: '{"action":"abc}'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        take_thread_control: {
+                            metadata: '{"action":"foo","data":"xyz"}'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        take_thread_control: {
+                            metadata: {}
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        take_thread_control: {
+                            metadata: '{"action":"foo","data":{"a":1}}'
+                        }
+                    }]
+                }]
+            });
+
+            assert.equal(requestLib.callCount, 8);
+
+            assert.deepEqual(actions, [
+                ['ahoj', {}],
+                ['passThread', { metadata: {} }],
+                ['requestThread', { metadata: 'text' }],
+                ['requestThread', { metadata: {} }],
+                ['requestThread', { metadata: '{"action":"abc}' }],
+                ['takeThread', { metadata: '{"action":"foo","data":"xyz"}' }],
+                ['takeThread', { metadata: {} }],
+                ['foo', { a: 1 }]
+            ]);
+        });
+
         it('shoud use attachment cache', async () => {
             const processor = new Processor((req, res) => {
                 res.image('https://goo.gl/img.png', true);

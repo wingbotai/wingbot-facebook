@@ -158,6 +158,11 @@ class FacebookSender extends ReturnSender {
             if (this._resolveRef) {
                 this._resolveRef();
             }
+            // ignore errors on SEEN messages
+            if (payload.sender_action === 'mark_seen') {
+                await new Promise(r => setTimeout(r, 500));
+                return { seen_error: true };
+            }
             this._throwDisconnectedError(e);
             throw e;
         }
