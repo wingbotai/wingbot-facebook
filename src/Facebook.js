@@ -38,6 +38,7 @@ class Facebook {
      * @param {string} [options.passThreadAction] - trigger this action for pass thread event
      * @param {string} [options.takeThreadAction] - trigger this action for take thread event
      * @param {string} [options.requestThreadAction] - trigger this action when thread request
+     * @param {boolean} [options.throwsExceptions] - allows processEvents method to thow exception
      * @param {string} [options.apiUrl] - override Facebook API url
      * @param {AttachmentCache} [options.attachmentStorage] - cache for reusing attachments
      * @param {Function} [options.requestLib] - request library replacement
@@ -151,7 +152,7 @@ class Facebook {
      * @param {string} pageId - channel/page identifier
      * @returns {Promise<{status:number}>}
      */
-    processMessage (message, senderId, pageId) {
+    async processMessage (message, senderId, pageId) {
         const options = this._options;
 
         const messageSender = new FacebookSender(
@@ -226,7 +227,13 @@ class Facebook {
             return Promise.resolve({ status: 201 });
         }
 
-        return this.processor.processMessage(event, pageId, messageSender);
+        const res = await this.processor.processMessage(event, pageId, messageSender);
+
+        if (res && res.status === 500 && this._options.throwsExceptions) {
+            throw new Error('Processor finished with error');
+        }
+
+        return res;
     }
 
     /**
