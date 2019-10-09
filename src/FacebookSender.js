@@ -75,7 +75,8 @@ class FacebookSender extends ReturnSender {
             qs: { access_token: this._token },
             method: 'POST',
             body,
-            json: true
+            json: true,
+            _incommingMessage: this._incommingMessage
         });
     }
 

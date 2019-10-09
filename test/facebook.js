@@ -305,23 +305,13 @@ describe('<Facebook>', () => {
                     }, {
                         sender: { id: 'abc' },
                         take_thread_control: {
-                            metadata: '{"action":"foo","data":"xyz"}'
-                        }
-                    }, {
-                        sender: { id: 'abc' },
-                        take_thread_control: {
                             metadata: {}
-                        }
-                    }, {
-                        sender: { id: 'abc' },
-                        take_thread_control: {
-                            metadata: '{"action":"foo","data":{"a":1}}'
                         }
                     }]
                 }]
             });
 
-            assert.equal(requestLib.callCount, 8);
+            assert.equal(requestLib.callCount, 6);
 
             assert.deepEqual(actions, [
                 ['ahoj', {}],
@@ -329,9 +319,7 @@ describe('<Facebook>', () => {
                 ['requestThread', { metadata: 'text' }],
                 ['requestThread', { metadata: {} }],
                 ['requestThread', { metadata: '{"action":"abc}' }],
-                ['takeThread', { metadata: '{"action":"foo","data":"xyz"}' }],
-                ['takeThread', { metadata: {} }],
-                ['foo', { a: 1 }]
+                ['takeThread', { metadata: {} }]
             ]);
         });
 

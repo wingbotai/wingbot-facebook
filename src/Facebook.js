@@ -116,12 +116,9 @@ class Facebook {
 
     _actionFromThreadControlMetadata (event) {
         let metadata = null;
+
         if (event.pass_thread_control && typeof event.pass_thread_control.metadata === 'string') {
             ({ metadata } = event.pass_thread_control);
-        } else if (event.take_thread_control && typeof event.take_thread_control.metadata === 'string') {
-            ({ metadata } = event.take_thread_control);
-        } else if (event.request_thread_control && typeof event.request_thread_control.metadata === 'string') {
-            ({ metadata } = event.request_thread_control);
         }
 
         if (!metadata || !metadata.match(/^\{".+\}$/)) {
