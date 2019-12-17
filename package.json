@@ -1,6 +1,6 @@
 {
   "name": "wingbot-facebook",
-  "version": "2.12.2",
+  "version": "3.0.0-alpha.3",
   "description": "Facebook messenger plugin for wingbot",
   "main": "src/main.js",
   "scripts": {
@@ -46,7 +46,7 @@
     "mocha": "^6.1.4",
     "nyc": "^14.1.1",
     "sinon": "^7.3.2",
-    "wingbot": "^2.9.2"
+    "wingbot": "^3.0.0-alpha.11"
   },
   "dependencies": {
     "fast-deep-equal": "^2.0.1",
@@ -54,6 +54,6 @@
     "request-promise-native": "^1.0.5"
   },
   "peerDependencies": {
-    "wingbot": "^2.10.0"
+    "wingbot": "^3.0.0-alpha.11"
   }
 }

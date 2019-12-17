@@ -16,7 +16,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a' });
+            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a', appId: '1' });
 
             const res = facebook.verifyWebhook({
                 'hub.challenge': 'challenge',
@@ -30,7 +30,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { pageToken: 'a' });
+            const facebook = new Facebook(processor, { pageToken: 'a', appId: '1' });
 
             assert.throws(() => {
                 facebook.verifyWebhook({
@@ -44,7 +44,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a' });
+            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a', appId: '1' });
 
             assert.throws(() => {
                 facebook.verifyWebhook({
@@ -57,7 +57,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a' });
+            const facebook = new Facebook(processor, { botToken: 'a', pageToken: 'a', appId: '1' });
 
             assert.throws(() => {
                 facebook.verifyWebhook({
@@ -75,7 +75,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { pageToken: 'a' });
+            const facebook = new Facebook(processor, { pageToken: 'a', appId: '1' });
 
             const res = await facebook.verifyRequest('body', {
                 'x-hub-signature': 'any'
@@ -88,7 +88,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a' });
+            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a', appId: '1' });
 
             const res = await facebook.verifyRequest('body', {
                 'x-hub-signature': 'hash=fb22411c05e5748702d3949efbef160bf1bdc11a'
@@ -101,7 +101,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a' });
+            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a', appId: '1' });
 
             let err = null;
             try {
@@ -118,7 +118,7 @@ describe('<Facebook>', () => {
             const processor = new Processor((req, res) => {
                 res.text('hello');
             });
-            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a' });
+            const facebook = new Facebook(processor, { appSecret: 'as', pageToken: 'a', appId: '1' });
 
             assert.throws(() => {
                 facebook.verifyRequest('body', {
@@ -162,7 +162,7 @@ describe('<Facebook>', () => {
                 return {};
             });
 
-            const facebook = new Facebook(processor, { pageToken: 'a', requestLib });
+            const facebook = new Facebook(processor, { pageToken: 'a', requestLib, appId: '1' });
 
             const res = await facebook.processEvent({
                 object: 'page',
@@ -223,6 +223,7 @@ describe('<Facebook>', () => {
             const requestLib = sinon.spy(({ body }) => ({ body }));
 
             const facebook = new Facebook(processor, {
+                appId: '1',
                 pageToken: 'a',
                 requestLib,
                 passThreadAction: 'passThread',
@@ -266,6 +267,7 @@ describe('<Facebook>', () => {
             const requestLib = sinon.spy(({ body }) => ({ body }));
 
             const facebook = new Facebook(processor, {
+                appId: '1',
                 pageToken: 'a',
                 requestLib,
                 passThreadAction: 'passThread',
@@ -356,7 +358,9 @@ describe('<Facebook>', () => {
                 }
             };
 
-            const facebook = new Facebook(processor, { pageToken: 'a', requestLib, attachmentStorage });
+            const facebook = new Facebook(processor, {
+                pageToken: 'a', requestLib, attachmentStorage, appId: '1'
+            });
 
             await facebook.processEvent({
                 object: 'page',

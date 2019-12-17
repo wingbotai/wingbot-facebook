@@ -19,6 +19,8 @@ const PROCESS_EVENTS = [
     'delivery'
 ];
 
+const ALLOWED_HANDOVER_ACTION_KEYS = ['action', 'data', 'text', 'setState'];
+
 /**
  * @typedef {Object} AttachmentCache
  * @prop {Function} findAttachmentByUrl
@@ -128,15 +130,23 @@ class Facebook {
         try {
             const res = JSON.parse(metadata);
 
-            if (typeof res.action !== 'string'
-                || !['undefined', 'object'].includes(typeof res.data)) {
+            if ((typeof res.action !== 'string' && res.action !== null)
+                || !['undefined', 'object'].includes(typeof res.data)
+                || !['undefined', 'object'].includes(typeof res.setState)
+                || !['undefined', 'string'].includes(typeof res.text)
+                || (!res.action && !res.text)
+                || !Object.keys(res).every(key => ALLOWED_HANDOVER_ACTION_KEYS.includes(key))) {
 
                 return null;
             }
 
-            const { action, data = {} } = res;
+            const {
+                action = null, data = {}, text = null, setState = null
+            } = res;
 
-            return { action, data };
+            return {
+                action, data, text, setState
+            };
         } catch (e) {
             return null;
         }
@@ -147,9 +157,10 @@ class Facebook {
      * @param {Object} message - wingbot chat event
      * @param {string} senderId - chat event sender identifier
      * @param {string} pageId - channel/page identifier
+     * @param {Object} data - contextual data (will be available in res.data)
      * @returns {Promise<{status:number}>}
      */
-    async processMessage (message, senderId, pageId) {
+    async processMessage (message, senderId, pageId, data = {}) {
         const options = this._options;
 
         const messageSender = new FacebookSender(
@@ -165,14 +176,33 @@ class Facebook {
         const passThreadAction = this._actionFromThreadControlMetadata(message);
 
         if (passThreadAction) {
-            event = Request.postBack(
-                senderId,
-                passThreadAction.action,
-                passThreadAction.data,
-                null,
-                null,
-                message.timestamp
-            );
+            if (passThreadAction.action && passThreadAction.text) {
+                const payload = JSON.stringify({
+                    action: passThreadAction.action,
+                    data: passThreadAction.data
+                });
+                event = Request
+                    .quickReplyText(senderId, passThreadAction.text, payload, message.timestamp);
+                if (passThreadAction.setState) {
+                    event.setState = passThreadAction.setState;
+                }
+            } else if (passThreadAction.action) {
+                event = Request.postBackWithSetState(
+                    senderId,
+                    passThreadAction.action,
+                    passThreadAction.data,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
+            } else { // text
+                event = Request.textWithSetState(
+                    senderId,
+                    passThreadAction.text,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
+            }
+
         } else if (message.take_thread_control) {
             const takeFromSelf = !this._options.appId
                 || `${message.take_thread_control.previous_owner_app_id}` === this._options.appId;
@@ -224,7 +254,12 @@ class Facebook {
             return Promise.resolve({ status: 201 });
         }
 
-        const res = await this.processor.processMessage(event, pageId, messageSender);
+        const contextData = {
+            appId: this._options.appId,
+            apiUrl: messageSender.url,
+            ...data
+        };
+        const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
 
         if (res && res.status === 500 && this._options.throwsExceptions) {
             throw new Error('Processor finished with error');
