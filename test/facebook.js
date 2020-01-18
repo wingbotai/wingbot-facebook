@@ -248,12 +248,11 @@ describe('<Facebook>', () => {
                 }]
             });
 
-            assert.equal(requestLib.callCount, 3);
+            assert.equal(requestLib.callCount, 2);
 
             assert.deepEqual(actions, [
                 ['passThread', { a: 1 }],
-                ['requestThread', { b: 2 }],
-                ['takeThread', { c: 3 }]
+                ['requestThread', { b: 2 }]
             ]);
         });
 
@@ -313,15 +312,14 @@ describe('<Facebook>', () => {
                 }]
             });
 
-            assert.equal(requestLib.callCount, 6);
+            assert.equal(requestLib.callCount, 5);
 
             assert.deepEqual(actions, [
                 ['ahoj', {}],
                 ['passThread', { metadata: {} }],
                 ['requestThread', { metadata: 'text' }],
                 ['requestThread', { metadata: {} }],
-                ['requestThread', { metadata: '{"action":"abc}' }],
-                ['takeThread', { metadata: {} }]
+                ['requestThread', { metadata: '{"action":"abc}' }]
             ]);
         });
 

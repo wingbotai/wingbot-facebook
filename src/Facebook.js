@@ -108,10 +108,10 @@ class Facebook {
         return Promise.resolve();
     }
 
-    _processEventsOfSender (senderId, events) {
+    _processEventsOfSender (senderId, events, data) {
         return events.reduce(
             (promise, { message, pageId }) => promise
-                .then(() => this.processMessage(message, senderId, pageId)),
+                .then(() => this.processMessage(message, senderId, pageId, data)),
             Promise.resolve()
         );
     }
@@ -272,9 +272,10 @@ class Facebook {
      * Process Facebook request
      *
      * @param {Object} body - event body
+     * @param {Object} [data] - event context data
      * @returns {Promise<Array<{message:Object,pageId:string}>>} - unprocessed events
      */
-    async processEvent (body) {
+    async processEvent (body, data = {}) {
         const otherEvents = [];
 
         if (body.object !== 'page') {
@@ -311,7 +312,7 @@ class Facebook {
         });
 
         const process = Array.from(eventsBySenderId.entries())
-            .map(([senderId, events]) => this._processEventsOfSender(senderId, events));
+            .map(([senderId, events]) => this._processEventsOfSender(senderId, events, data));
 
         await Promise.all(process);
 
