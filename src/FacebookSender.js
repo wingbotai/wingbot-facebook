@@ -6,6 +6,14 @@
 const { ReturnSender } = require('wingbot');
 const request = require('request-promise-native');
 
+/**
+ * Text filter function
+ *
+ * @callback textFilter
+ * @param {string} text - input text
+ * @returns {string} - filtered text
+ */
+
 class FacebookSender extends ReturnSender {
 
     /**
@@ -13,6 +21,9 @@ class FacebookSender extends ReturnSender {
      * @param {Object} options
      * @param {string} options.pageToken
      * @param {string} [options.apiUrl] - override the API url
+     * @param {string} [options.appId] - override the API url
+     * @param {string} [options.pageId] - provide the page id
+     * @param {textFilter} [options.textFilter] - filter for saving the texts
      * @param {{findAttachmentByUrl:Function,saveAttachmentId:Function}} [options.attachmentStorage]
      * @param {string} userId
      * @param {Object} incommingMessage
@@ -45,6 +56,11 @@ class FacebookSender extends ReturnSender {
         this._req = req;
 
         this._resolveRef = null;
+
+        this._pageId = options.pageId
+            || (incommingMessage.recipient && incommingMessage.recipient.id);
+
+        this._appId = options.appId;
     }
 
     _request (data) {
@@ -76,7 +92,9 @@ class FacebookSender extends ReturnSender {
             method: 'POST',
             body,
             json: true,
-            _incommingMessage: this._incommingMessage
+            _incommingMessage: this._incommingMessage,
+            _pageId: this._pageId,
+            _appId: this._appId
         });
     }
 

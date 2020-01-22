@@ -158,13 +158,16 @@ class Facebook {
      * @param {string} senderId - chat event sender identifier
      * @param {string} pageId - channel/page identifier
      * @param {Object} data - contextual data (will be available in res.data)
+     * @param {string} [data.appId] - possibility to override appId
      * @returns {Promise<{status:number}>}
      */
     async processMessage (message, senderId, pageId, data = {}) {
         const options = this._options;
 
+        const appId = data.appId || options.appId;
+
         const messageSender = new FacebookSender(
-            options,
+            { ...options, appId, pageId },
             senderId,
             message,
             this._senderLogger,
@@ -204,11 +207,11 @@ class Facebook {
             }
 
         } else if (message.take_thread_control) {
-            const takeFromSelf = !this._options.appId
-                || `${message.take_thread_control.previous_owner_app_id}` === this._options.appId;
+            const takeFromSelf = !appId
+                || `${message.take_thread_control.previous_owner_app_id}` === appId;
 
-            const appIdInMetaData = this._options.appId
-                && message.take_thread_control.metadata === this._options.appId;
+            const appIdInMetaData = appId
+                && message.take_thread_control.metadata === appId;
 
             if (this._options.takeThreadAction && takeFromSelf && !appIdInMetaData) {
                 event = Request.postBack(
@@ -255,9 +258,9 @@ class Facebook {
         }
 
         const contextData = {
-            appId: this._options.appId,
             apiUrl: messageSender.url,
-            ...data
+            ...data,
+            appId
         };
         const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
 

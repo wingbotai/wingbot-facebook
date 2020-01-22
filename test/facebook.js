@@ -256,6 +256,49 @@ describe('<Facebook>', () => {
             ]);
         });
 
+        it('passes appId and pageId to bot and back', async () => {
+            let appId;
+
+            const processor = new Processor((req, res) => {
+                ({ appId } = res.data);
+                res.text('ha');
+            });
+
+            const requestLib = sinon.spy(({ body }) => ({ body }));
+
+            const facebook = new Facebook(processor, {
+                appId: '1',
+                pageToken: 'a',
+                requestLib,
+                passThreadAction: 'passThread',
+                takeThreadAction: 'takeThread',
+                requestThreadAction: 'requestThread'
+            });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        pass_thread_control: { a: 1 }
+                    }]
+                }]
+            }, { appId: 'x' });
+
+            assert.equal(requestLib.callCount, 1);
+
+            const [args] = requestLib.firstCall.args;
+
+            assert.deepEqual(args, {
+                ...args,
+                _appId: 'x',
+                _pageId: 'pid'
+            });
+
+            assert.strictEqual(appId, 'x');
+        });
+
         it('transforms string metadata to actions', async () => {
             const actions = [];
             const processor = new Processor((req, res) => {
