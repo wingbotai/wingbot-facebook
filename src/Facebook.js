@@ -262,6 +262,25 @@ class Facebook {
             ...data,
             appId
         };
+
+        if (event.postback && event.postback.payload) {
+            const { action, data: payloaddata } = event.postback.payload;
+
+            if (action === 'passThread') {
+                let { metadata } = payloaddata;
+
+                if (metadata && typeof metadata === 'string') {
+                    metadata = JSON.parse(metadata);
+                }
+                if (metadata && metadata.data) {
+                    const { $hopCount } = metadata.data;
+                    if (typeof $hopCount === 'number') {
+                        Object.assign(contextData, { _$hopCount: $hopCount });
+                    }
+                }
+            }
+        }
+
         const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
 
         if (res && res.status === 500 && this._options.throwsExceptions) {

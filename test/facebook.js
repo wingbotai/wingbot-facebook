@@ -351,18 +351,30 @@ describe('<Facebook>', () => {
                         take_thread_control: {
                             metadata: {}
                         }
+                    }, {
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: '{"data":{"$hopCount":1}}'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: { data: { $hopCount: 1 } }
+                        }
                     }]
                 }]
             });
 
-            assert.equal(requestLib.callCount, 5);
+            assert.equal(requestLib.callCount, 7);
 
             assert.deepEqual(actions, [
                 ['ahoj', {}],
                 ['passThread', { metadata: {} }],
                 ['requestThread', { metadata: 'text' }],
                 ['requestThread', { metadata: {} }],
-                ['requestThread', { metadata: '{"action":"abc}' }]
+                ['requestThread', { metadata: '{"action":"abc}' }],
+                ['passThread', { metadata: '{"data":{"$hopCount":1}}' }],
+                ['passThread', { metadata: { data: { $hopCount: 1 } } }]
             ]);
         });
 
