@@ -351,30 +351,64 @@ describe('<Facebook>', () => {
                         take_thread_control: {
                             metadata: {}
                         }
-                    }, {
-                        sender: { id: 'abc' },
-                        pass_thread_control: {
-                            metadata: '{"data":{"$hopCount":1}}'
-                        }
-                    }, {
-                        sender: { id: 'abc' },
-                        pass_thread_control: {
-                            metadata: { data: { $hopCount: 1 } }
-                        }
                     }]
                 }]
             });
 
-            assert.equal(requestLib.callCount, 7);
+            assert.equal(requestLib.callCount, 5);
 
             assert.deepEqual(actions, [
                 ['ahoj', {}],
                 ['passThread', { metadata: {} }],
                 ['requestThread', { metadata: 'text' }],
                 ['requestThread', { metadata: {} }],
-                ['requestThread', { metadata: '{"action":"abc}' }],
-                ['passThread', { metadata: '{"data":{"$hopCount":1}}' }],
-                ['passThread', { metadata: { data: { $hopCount: 1 } } }]
+                ['requestThread', { metadata: '{"action":"abc}' }]
+            ]);
+        });
+
+        it('should process $hopCount metadata', async () => {
+            const actions = [];
+            const processor = new Processor((req, res) => {
+                actions.push([req.action(), req.action(true)]);
+                res.text('ha');
+
+                assert.deepEqual(res.data, {
+                    _$hopCount: 1,
+                    _actionCount: 1,
+                    _fromInitialEvent: true,
+                    apiUrl: 'https://graph.facebook.com/v3.2/me',
+                    appId: '1'
+                });
+            });
+
+            const requestLib = sinon.spy(({ body }) => ({ body }));
+
+            const facebook = new Facebook(processor, {
+                appId: '1',
+                pageToken: 'a',
+                requestLib,
+                passThreadAction: 'passThread',
+                takeThreadAction: 'takeThread',
+                requestThreadAction: 'requestThread'
+            });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: '{"action":"abc","data":{"$hopCount":1}}'
+                        }
+                    }]
+                }]
+            });
+
+            assert.equal(requestLib.callCount, 1);
+
+            assert.deepEqual(actions, [
+                ['abc', { $hopCount: 1 }]
             ]);
         });
 

@@ -178,6 +178,12 @@ class Facebook {
 
         const passThreadAction = this._actionFromThreadControlMetadata(message);
 
+        let $hopCount;
+
+        if (passThreadAction && passThreadAction.data) {
+            ({ $hopCount } = passThreadAction.data);
+        }
+
         if (passThreadAction) {
             if (passThreadAction.action && passThreadAction.text) {
                 const payload = JSON.stringify({
@@ -263,22 +269,8 @@ class Facebook {
             appId
         };
 
-        if (event.postback && event.postback.payload) {
-            const { action, data: payloaddata } = event.postback.payload;
-
-            if (action === 'passThread') {
-                let { metadata } = payloaddata;
-
-                if (metadata && typeof metadata === 'string') {
-                    metadata = JSON.parse(metadata);
-                }
-                if (metadata && metadata.data) {
-                    const { $hopCount } = metadata.data;
-                    if (typeof $hopCount === 'number') {
-                        Object.assign(contextData, { _$hopCount: $hopCount });
-                    }
-                }
-            }
+        if (typeof $hopCount === 'number') {
+            Object.assign(contextData, { _$hopCount: $hopCount });
         }
 
         const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
