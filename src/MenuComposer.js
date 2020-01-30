@@ -25,7 +25,7 @@ class MenuComposer {
      *
      * @param {string} title
      * @param {string} action
-     * @param {Object} [data]
+     * @param {object} [data]
      * @returns {this}
      */
     addPostBack (title, action, data = {}) {

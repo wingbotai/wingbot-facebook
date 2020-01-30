@@ -370,7 +370,7 @@ describe('<Facebook>', () => {
             const actions = [];
             const processor = new Processor((req, res) => {
                 actions.push([req.action(), req.action(true)]);
-                res.text('ha');
+                res.passThread('hoj');
 
                 assert.deepEqual(res.data, {
                     _$hopCount: 1,
@@ -406,6 +406,14 @@ describe('<Facebook>', () => {
             });
 
             assert.equal(requestLib.callCount, 1);
+            assert.deepEqual(requestLib.firstCall.args[0].body, {
+                messaging_type: 'RESPONSE',
+                metadata: '{"data":{"$hopCount":2}}',
+                recipient: {
+                    id: 'abc'
+                },
+                target_app_id: 'hoj'
+            });
 
             assert.deepEqual(actions, [
                 ['abc', { $hopCount: 1 }]

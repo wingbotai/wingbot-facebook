@@ -22,7 +22,7 @@ const PROCESS_EVENTS = [
 const ALLOWED_HANDOVER_ACTION_KEYS = ['action', 'data', 'text', 'setState'];
 
 /**
- * @typedef {Object} AttachmentCache
+ * @typedef {object} AttachmentCache
  * @prop {Function} findAttachmentByUrl
  * @prop {Function} saveAttachmentId
  */
@@ -32,7 +32,7 @@ class Facebook {
     /**
      *
      * @param {Processor} processor
-     * @param {Object} options
+     * @param {object} options
      * @param {string} options.pageToken - facebook page token
      * @param {string} options.appId - facebook app id
      * @param {string} [options.botToken] - botToken for webhook verification
@@ -60,7 +60,7 @@ class Facebook {
     /**
      * Verifies Bots webhook against Facebook
      *
-     * @param {Object} queryString
+     * @param {object} queryString
      * @throws {Error} when the request is invalid
      * @returns {string}
      */
@@ -80,7 +80,7 @@ class Facebook {
      * Verify Facebook webhook event
      *
      * @param {Buffer|string} body
-     * @param {Object} headers
+     * @param {object} headers
      * @throws {Error} when x-hub-signature does not match body signature
      * @returns {Promise}
      */
@@ -135,7 +135,7 @@ class Facebook {
                 || !['undefined', 'object'].includes(typeof res.setState)
                 || !['undefined', 'string'].includes(typeof res.text)
                 || (!res.action && !res.text)
-                || !Object.keys(res).every(key => ALLOWED_HANDOVER_ACTION_KEYS.includes(key))) {
+                || !Object.keys(res).every((key) => ALLOWED_HANDOVER_ACTION_KEYS.includes(key))) {
 
                 return null;
             }
@@ -154,10 +154,10 @@ class Facebook {
 
     /**
      *
-     * @param {Object} message - wingbot chat event
+     * @param {object} message - wingbot chat event
      * @param {string} senderId - chat event sender identifier
      * @param {string} pageId - channel/page identifier
-     * @param {Object} data - contextual data (will be available in res.data)
+     * @param {object} data - contextual data (will be available in res.data)
      * @param {string} [data.appId] - possibility to override appId
      * @returns {Promise<{status:number}>}
      */
@@ -285,9 +285,9 @@ class Facebook {
     /**
      * Process Facebook request
      *
-     * @param {Object} body - event body
-     * @param {Object} [data] - event context data
-     * @returns {Promise<Array<{message:Object,pageId:string}>>} - unprocessed events
+     * @param {object} body - event body
+     * @param {object} [data] - event context data
+     * @returns {Promise<Array<{message:object,pageId:string}>>} - unprocessed events
      */
     async processEvent (body, data = {}) {
         const otherEvents = [];
@@ -334,7 +334,7 @@ class Facebook {
     }
 
     _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents) {
-        if (PROCESS_EVENTS.some(e => typeof message[e] !== 'undefined')) {
+        if (PROCESS_EVENTS.some((e) => typeof message[e] !== 'undefined')) {
             let senderId = null;
 
             if (message.sender && message.sender.id) {

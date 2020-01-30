@@ -18,7 +18,7 @@ class FacebookSender extends ReturnSender {
 
     /**
      *
-     * @param {Object} options
+     * @param {object} options
      * @param {string} options.pageToken
      * @param {string} [options.apiUrl] - override the API url
      * @param {string} [options.appId] - override the API url
@@ -26,7 +26,7 @@ class FacebookSender extends ReturnSender {
      * @param {textFilter} [options.textFilter] - filter for saving the texts
      * @param {{findAttachmentByUrl:Function,saveAttachmentId:Function}} [options.attachmentStorage]
      * @param {string} userId
-     * @param {Object} incommingMessage
+     * @param {object} incommingMessage
      * @param {console} [logger] - console like logger
      * @param {Function} [req] - request library replacement
      */
@@ -73,15 +73,17 @@ class FacebookSender extends ReturnSender {
             uri += '/pass_thread_control';
         } else if (data.take_thread_control) {
             uri += '/take_thread_control';
-            body = Object.assign({
-                recipient: data.recipient
-            }, data.take_thread_control);
+            body = {
+                recipient: data.recipient,
+                ...data.take_thread_control
+            };
 
         } else if (data.request_thread_control) {
             uri += '/request_thread_control';
-            body = Object.assign({
-                recipient: data.recipient
-            }, data.request_thread_control);
+            body = {
+                recipient: data.recipient,
+                ...data.request_thread_control
+            };
         } else {
             uri += '/messages';
         }
@@ -134,15 +136,18 @@ class FacebookSender extends ReturnSender {
 
             if (attachmentId) {
                 return {
-                    data: Object.assign({}, data, {
-                        message: Object.assign({}, data.message, {
-                            attachment: Object.assign({}, data.message.attachment, {
+                    data: {
+                        ...data,
+                        message: {
+                            ...data.message,
+                            attachment: {
+                                ...data.message.attachment,
                                 payload: {
                                     attachment_id: attachmentId
                                 }
-                            })
-                        })
-                    }),
+                            }
+                        }
+                    },
                     attachmentUrl
                 };
             }
@@ -179,7 +184,7 @@ class FacebookSender extends ReturnSender {
             }
             // ignore errors on SEEN messages
             if (payload.sender_action === 'mark_seen') {
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise((r) => setTimeout(r, 500));
                 return { seen_error: true };
             }
             this._throwDisconnectedError(e);
@@ -196,9 +201,10 @@ class FacebookSender extends ReturnSender {
 
             if (refState) {
                 return {
-                    state: Object.assign({}, refState.state, {
+                    state: {
+                        ...refState.state,
                         _mergedFromSenderId: identifier
-                    })
+                    }
                 };
             }
         }
