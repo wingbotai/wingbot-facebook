@@ -6,7 +6,7 @@
 const Facebook = require('./Facebook');
 const Settings = require('./Settings');
 const FacebookSender = require('./FacebookSender');
-const userLoader = require('./userLoader');
+const userLoader = require('./UserLoader');
 
 module.exports = {
     Facebook,

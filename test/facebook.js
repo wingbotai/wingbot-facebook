@@ -366,6 +366,52 @@ describe('<Facebook>', () => {
             ]);
         });
 
+        it('should process $hopCount metadata', async () => {
+            const actions = [];
+            const processor = new Processor((req, res) => {
+                actions.push([req.action(), req.action(true)]);
+                res.text('ha');
+
+                assert.deepEqual(res.data, {
+                    _$hopCount: 1,
+                    _actionCount: 1,
+                    _fromInitialEvent: true,
+                    apiUrl: 'https://graph.facebook.com/v3.2/me',
+                    appId: '1'
+                });
+            });
+
+            const requestLib = sinon.spy(({ body }) => ({ body }));
+
+            const facebook = new Facebook(processor, {
+                appId: '1',
+                pageToken: 'a',
+                requestLib,
+                passThreadAction: 'passThread',
+                takeThreadAction: 'takeThread',
+                requestThreadAction: 'requestThread'
+            });
+
+            await facebook.processEvent({
+                object: 'page',
+                entry: [{
+                    id: 'pid',
+                    messaging: [{
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: '{"action":"abc","data":{"$hopCount":1}}'
+                        }
+                    }]
+                }]
+            });
+
+            assert.equal(requestLib.callCount, 1);
+
+            assert.deepEqual(actions, [
+                ['abc', { $hopCount: 1 }]
+            ]);
+        });
+
         it('shoud use attachment cache', async () => {
             const processor = new Processor((req, res) => {
                 res.image('https://goo.gl/img.png', true);

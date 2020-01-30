@@ -178,6 +178,12 @@ class Facebook {
 
         const passThreadAction = this._actionFromThreadControlMetadata(message);
 
+        let $hopCount;
+
+        if (passThreadAction && passThreadAction.data) {
+            ({ $hopCount } = passThreadAction.data);
+        }
+
         if (passThreadAction) {
             if (passThreadAction.action && passThreadAction.text) {
                 const payload = JSON.stringify({
@@ -262,6 +268,11 @@ class Facebook {
             ...data,
             appId
         };
+
+        if (typeof $hopCount === 'number') {
+            Object.assign(contextData, { _$hopCount: $hopCount });
+        }
+
         const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
 
         if (res && res.status === 500 && this._options.throwsExceptions) {
