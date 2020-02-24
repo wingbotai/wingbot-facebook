@@ -211,7 +211,7 @@ class Facebook {
                     message.timestamp
                 );
             }
-
+            event = { ...message, ...event };
         } else if (message.take_thread_control) {
             const takeFromSelf = !appId
                 || `${message.take_thread_control.previous_owner_app_id}` === appId;
