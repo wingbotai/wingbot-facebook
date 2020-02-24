@@ -310,7 +310,9 @@ class Facebook {
 
                     console.log('EV:', JSON.stringify(message)); // eslint-disable-line no-console
 
-                    this._processMessagingArrayItem(message, pageId, eventsBySenderId, otherEvents);
+                    this._processMessagingArrayItem(
+                        message, pageId, eventsBySenderId, otherEvents, true
+                    );
                 });
             }
 
@@ -333,9 +335,13 @@ class Facebook {
         return otherEvents;
     }
 
-    _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents) {
+    _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents, isStandby = false) {
         if (PROCESS_EVENTS.some((e) => typeof message[e] !== 'undefined')) {
             let senderId = null;
+
+            if (isStandby) {
+                Object.assign(message, { isStandby });
+            }
 
             if (message.sender && message.sender.id) {
                 senderId = message.sender.id;
