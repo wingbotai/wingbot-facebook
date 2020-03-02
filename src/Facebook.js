@@ -19,8 +19,7 @@ const PROCESS_EVENTS = [
     'delivery'
 ];
 
-const ALLOWED_HANDOVER_ACTION_KEYS = ['action', 'data', 'text', 'setState'];
-
+const ALLOWED_HANDOVER_ACTION_KEYS = ['action', 'data', 'text', 'setState', 'intent'];
 /**
  * @typedef {object} AttachmentCache
  * @prop {Function} findAttachmentByUrl
@@ -130,22 +129,23 @@ class Facebook {
         try {
             const res = JSON.parse(metadata);
 
-            if ((typeof res.action !== 'string' && res.action !== null)
+            if ((typeof res.action !== 'string' && res.action !== null && res.action !== undefined)
                 || !['undefined', 'object'].includes(typeof res.data)
                 || !['undefined', 'object'].includes(typeof res.setState)
                 || !['undefined', 'string'].includes(typeof res.text)
-                || (!res.action && !res.text)
+                || !['undefined', 'string'].includes(typeof res.intent)
+                || (!res.action && !res.text && !res.intent)
                 || !Object.keys(res).every((key) => ALLOWED_HANDOVER_ACTION_KEYS.includes(key))) {
 
                 return null;
             }
 
             const {
-                action = null, data = {}, text = null, setState = null
+                action = null, data = {}, text = null, setState = null, intent = null
             } = res;
 
             return {
-                action, data, text, setState
+                action, data, text, setState, intent
             };
         } catch (e) {
             return null;
@@ -203,6 +203,13 @@ class Facebook {
                     passThreadAction.setState,
                     message.timestamp
                 );
+            } else if (passThreadAction.intent) {
+                event = Request.intentWithSetState(
+                    senderId,
+                    passThreadAction.intent,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
             } else { // text
                 event = Request.textWithSetState(
                     senderId,
@@ -212,6 +219,7 @@ class Facebook {
                 );
             }
             event = { ...message, ...event };
+
         } else if (message.take_thread_control) {
             const takeFromSelf = !appId
                 || `${message.take_thread_control.previous_owner_app_id}` === appId;

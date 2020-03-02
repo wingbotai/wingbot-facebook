@@ -302,7 +302,11 @@ describe('<Facebook>', () => {
         it('transforms string metadata to actions', async () => {
             const actions = [];
             const processor = new Processor((req, res) => {
-                actions.push([req.action(), req.action(true)]);
+                if (req.intent()) {
+                    actions.push([req.intent()]);
+                } else {
+                    actions.push([req.action(), req.action(true)]);
+                }
                 res.text('ha');
             });
 
@@ -325,6 +329,11 @@ describe('<Facebook>', () => {
                         sender: { id: 'abc' },
                         pass_thread_control: {
                             metadata: '{"action":"ahoj"}'
+                        }
+                    }, {
+                        sender: { id: 'abc' },
+                        pass_thread_control: {
+                            metadata: '{"intent":"foo-intent"}'
                         }
                     }, {
                         sender: { id: 'abc' },
@@ -355,10 +364,11 @@ describe('<Facebook>', () => {
                 }]
             });
 
-            assert.equal(requestLib.callCount, 5);
+            assert.equal(requestLib.callCount, 6);
 
             assert.deepEqual(actions, [
                 ['ahoj', {}],
+                ['foo-intent'],
                 ['passThread', { metadata: {} }],
                 ['requestThread', { metadata: 'text' }],
                 ['requestThread', { metadata: {} }],
