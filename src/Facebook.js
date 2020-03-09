@@ -19,8 +19,9 @@ const PROCESS_EVENTS = [
     'delivery'
 ];
 
+const ALLOWED_HANDOVER_ACTION_KEYS = ['action', 'data', 'text', 'setState', 'intent'];
 /**
- * @typedef {Object} AttachmentCache
+ * @typedef {object} AttachmentCache
  * @prop {Function} findAttachmentByUrl
  * @prop {Function} saveAttachmentId
  */
@@ -30,7 +31,7 @@ class Facebook {
     /**
      *
      * @param {Processor} processor
-     * @param {Object} options
+     * @param {object} options
      * @param {string} options.pageToken - facebook page token
      * @param {string} options.appId - facebook app id
      * @param {string} [options.botToken] - botToken for webhook verification
@@ -58,7 +59,7 @@ class Facebook {
     /**
      * Verifies Bots webhook against Facebook
      *
-     * @param {Object} queryString
+     * @param {object} queryString
      * @throws {Error} when the request is invalid
      * @returns {string}
      */
@@ -78,7 +79,7 @@ class Facebook {
      * Verify Facebook webhook event
      *
      * @param {Buffer|string} body
-     * @param {Object} headers
+     * @param {object} headers
      * @throws {Error} when x-hub-signature does not match body signature
      * @returns {Promise}
      */
@@ -106,10 +107,10 @@ class Facebook {
         return Promise.resolve();
     }
 
-    _processEventsOfSender (senderId, events) {
+    _processEventsOfSender (senderId, events, data) {
         return events.reduce(
             (promise, { message, pageId }) => promise
-                .then(() => this.processMessage(message, senderId, pageId)),
+                .then(() => this.processMessage(message, senderId, pageId, data)),
             Promise.resolve()
         );
     }
@@ -128,15 +129,24 @@ class Facebook {
         try {
             const res = JSON.parse(metadata);
 
-            if (typeof res.action !== 'string'
-                || !['undefined', 'object'].includes(typeof res.data)) {
+            if ((typeof res.action !== 'string' && res.action !== null && res.action !== undefined)
+                || !['undefined', 'object'].includes(typeof res.data)
+                || !['undefined', 'object'].includes(typeof res.setState)
+                || !['undefined', 'string'].includes(typeof res.text)
+                || !['undefined', 'string'].includes(typeof res.intent)
+                || (!res.action && !res.text && !res.intent)
+                || !Object.keys(res).every((key) => ALLOWED_HANDOVER_ACTION_KEYS.includes(key))) {
 
                 return null;
             }
 
-            const { action, data = {} } = res;
+            const {
+                action = null, data = {}, text = null, setState = null, intent = null
+            } = res;
 
-            return { action, data };
+            return {
+                action, data, text, setState, intent
+            };
         } catch (e) {
             return null;
         }
@@ -144,16 +154,20 @@ class Facebook {
 
     /**
      *
-     * @param {Object} message - wingbot chat event
+     * @param {object} message - wingbot chat event
      * @param {string} senderId - chat event sender identifier
      * @param {string} pageId - channel/page identifier
+     * @param {object} data - contextual data (will be available in res.data)
+     * @param {string} [data.appId] - possibility to override appId
      * @returns {Promise<{status:number}>}
      */
-    async processMessage (message, senderId, pageId) {
+    async processMessage (message, senderId, pageId, data = {}) {
         const options = this._options;
 
+        const appId = data.appId || options.appId;
+
         const messageSender = new FacebookSender(
-            options,
+            { ...options, appId, pageId },
             senderId,
             message,
             this._senderLogger,
@@ -164,21 +178,54 @@ class Facebook {
 
         const passThreadAction = this._actionFromThreadControlMetadata(message);
 
-        if (passThreadAction) {
-            event = Request.postBack(
-                senderId,
-                passThreadAction.action,
-                passThreadAction.data,
-                null,
-                null,
-                message.timestamp
-            );
-        } else if (message.take_thread_control) {
-            const takeFromSelf = !this._options.appId
-                || `${message.take_thread_control.previous_owner_app_id}` === this._options.appId;
+        let $hopCount;
 
-            const appIdInMetaData = this._options.appId
-                && message.take_thread_control.metadata === this._options.appId;
+        if (passThreadAction && passThreadAction.data) {
+            ({ $hopCount } = passThreadAction.data);
+        }
+
+        if (passThreadAction) {
+            if (passThreadAction.action && passThreadAction.text) {
+                const payload = JSON.stringify({
+                    action: passThreadAction.action,
+                    data: passThreadAction.data
+                });
+                event = Request
+                    .quickReplyText(senderId, passThreadAction.text, payload, message.timestamp);
+                if (passThreadAction.setState) {
+                    event.setState = passThreadAction.setState;
+                }
+            } else if (passThreadAction.action) {
+                event = Request.postBackWithSetState(
+                    senderId,
+                    passThreadAction.action,
+                    passThreadAction.data,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
+            } else if (passThreadAction.intent) {
+                event = Request.intentWithSetState(
+                    senderId,
+                    passThreadAction.intent,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
+            } else { // text
+                event = Request.textWithSetState(
+                    senderId,
+                    passThreadAction.text,
+                    passThreadAction.setState,
+                    message.timestamp
+                );
+            }
+            event = { ...message, ...event };
+
+        } else if (message.take_thread_control) {
+            const takeFromSelf = !appId
+                || `${message.take_thread_control.previous_owner_app_id}` === appId;
+
+            const appIdInMetaData = appId
+                && message.take_thread_control.metadata === appId;
 
             if (this._options.takeThreadAction && takeFromSelf && !appIdInMetaData) {
                 event = Request.postBack(
@@ -224,7 +271,17 @@ class Facebook {
             return Promise.resolve({ status: 201 });
         }
 
-        const res = await this.processor.processMessage(event, pageId, messageSender);
+        const contextData = {
+            apiUrl: messageSender.url,
+            ...data,
+            appId
+        };
+
+        if (typeof $hopCount === 'number') {
+            Object.assign(contextData, { _$hopCount: $hopCount });
+        }
+
+        const res = await this.processor.processMessage(event, pageId, messageSender, contextData);
 
         if (res && res.status === 500 && this._options.throwsExceptions) {
             throw new Error('Processor finished with error');
@@ -236,10 +293,11 @@ class Facebook {
     /**
      * Process Facebook request
      *
-     * @param {Object} body - event body
-     * @returns {Promise<Array<{message:Object,pageId:string}>>} - unprocessed events
+     * @param {object} body - event body
+     * @param {object} [data] - event context data
+     * @returns {Promise<Array<{message:object,pageId:string}>>} - unprocessed events
      */
-    async processEvent (body) {
+    async processEvent (body, data = {}) {
         const otherEvents = [];
 
         if (body.object !== 'page') {
@@ -260,7 +318,9 @@ class Facebook {
 
                     console.log('EV:', JSON.stringify(message)); // eslint-disable-line no-console
 
-                    this._processMessagingArrayItem(message, pageId, eventsBySenderId, otherEvents);
+                    this._processMessagingArrayItem(
+                        message, pageId, eventsBySenderId, otherEvents, true
+                    );
                 });
             }
 
@@ -276,16 +336,20 @@ class Facebook {
         });
 
         const process = Array.from(eventsBySenderId.entries())
-            .map(([senderId, events]) => this._processEventsOfSender(senderId, events));
+            .map(([senderId, events]) => this._processEventsOfSender(senderId, events, data));
 
         await Promise.all(process);
 
         return otherEvents;
     }
 
-    _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents) {
-        if (PROCESS_EVENTS.some(e => typeof message[e] !== 'undefined')) {
+    _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents, isStandby = false) {
+        if (PROCESS_EVENTS.some((e) => typeof message[e] !== 'undefined')) {
             let senderId = null;
+
+            if (isStandby) {
+                Object.assign(message, { isStandby });
+            }
 
             if (message.sender && message.sender.id) {
                 senderId = message.sender.id;

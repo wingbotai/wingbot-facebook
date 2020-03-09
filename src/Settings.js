@@ -35,7 +35,7 @@ class Settings {
             qs: { access_token: this.token },
             method: 'POST',
             json: data
-        }).catch(e => this.log.error('Bot settings failed', e));
+        }).catch((e) => this.log.error('Bot settings failed', e));
     }
 
     _get (fields = null) {
@@ -60,7 +60,7 @@ class Settings {
             qs: { access_token: this.token },
             method: 'DELETE',
             json: data
-        }).catch(e => this.log.error('Bot settings failed', e));
+        }).catch((e) => this.log.error('Bot settings failed', e));
     }
 
     /**
@@ -90,7 +90,7 @@ class Settings {
     /**
      * Sets up the Get Started Button
      *
-     * @param {string|Object} [payload=false] - leave blank to remove button, or provide the action
+     * @param {string|object} [payload=false] - leave blank to remove button, or provide the action
      * @returns {Promise}
      *
      * @example
@@ -128,7 +128,7 @@ class Settings {
             list = domains;
         }
 
-        list = list.map(dom => dom.replace(/\/$/, ''));
+        list = list.map((dom) => dom.replace(/\/$/, ''));
 
         return this._post({
             whitelisted_domains: list
@@ -172,7 +172,7 @@ class Settings {
      *      .done();
      */
     menu (locale = 'default', inputDisabled = false) {
-        const composer = new MenuComposer(newMenu => (
+        const composer = new MenuComposer((newMenu) => (
             this._get(['persistent_menu'])
                 .then((result) => {
                     let updateMenu;
@@ -192,7 +192,7 @@ class Settings {
                         persistent_menu: newMenu
                     });
                 })
-                .catch(e => this.log.error('Bot settings failed', e))
+                .catch((e) => this.log.error('Bot settings failed', e))
         ));
 
         return composer.menu(locale, inputDisabled);

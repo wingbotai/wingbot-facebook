@@ -1,7 +1,7 @@
 {
   "name": "wingbot-facebook",
-  "version": "2.12.3",
-  "description": "Facebook messenger plugin for wingbot",
+  "version": "3.0.0",
+  "description": "Facebook Messenger plugin for wingbot",
   "main": "src/main.js",
   "scripts": {
     "test": "npm run test:lint && npm run test:coverage && npm run test:coverage:threshold",
@@ -34,26 +34,26 @@
   "homepage": "https://github.com/wingbotai/wingbot-facebook#readme",
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.16.0",
-    "eslint-config-airbnb": "^17.1.0",
-    "eslint-mocha": "^0.5.0",
-    "eslint-plugin-import": "^2.17.2",
-    "eslint-plugin-jsdoc": "^4.8.3",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-mocha": "^5.3.0",
-    "eslint-plugin-react": "^7.13.0",
-    "jsdoc-to-markdown": "^5.0.0",
-    "mocha": "^6.1.4",
-    "nyc": "^14.1.1",
-    "sinon": "^7.3.2",
-    "wingbot": "^2.9.2"
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb": "^18.0.1",
+    "eslint-mocha": "^0.7.3",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jsdoc": "^21.0.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-mocha": "^6.2.2",
+    "eslint-plugin-react": "^7.18.0",
+    "jsdoc-to-markdown": "^5.0.3",
+    "mocha": "^7.0.1",
+    "nyc": "^15.0.0",
+    "sinon": "^8.1.1",
+    "wingbot": "^3.0.0-alpha.34"
   },
   "dependencies": {
-    "fast-deep-equal": "^2.0.1",
-    "request": "^2.85.0",
-    "request-promise-native": "^1.0.5"
+    "fast-deep-equal": "^3.1.1",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8"
   },
   "peerDependencies": {
-    "wingbot": "^2.10.0"
+    "wingbot": "^3.0.0-alpha.34"
   }
 }
