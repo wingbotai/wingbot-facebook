@@ -60,6 +60,7 @@ You can include a full JSON Action string to run a certain interaction in your b
 
 * [Facebook](#Facebook)
     * [new Facebook(processor, options, [senderLogger])](#new_Facebook_new)
+    * [.DEFAULT_EVENT_KEYS](#Facebook+DEFAULT_EVENT_KEYS)
     * [.verifyWebhook(queryString)](#Facebook+verifyWebhook) ⇒ <code>string</code>
     * [.verifyRequest(body, headers)](#Facebook+verifyRequest) ⇒ <code>Promise</code>
     * [.processMessage(message, senderId, pageId, data)](#Facebook+processMessage) ⇒ <code>Promise.&lt;{status:number}&gt;</code>
@@ -80,11 +81,22 @@ You can include a full JSON Action string to run a certain interaction in your b
 | [options.passThreadAction] | <code>string</code> | trigger this action for pass thread event |
 | [options.takeThreadAction] | <code>string</code> | trigger this action for take thread event |
 | [options.requestThreadAction] | <code>string</code> | trigger this action when thread request |
+| [options.allowEventKeys] | <code>Array.&lt;string&gt;</code> | list of keys, allowed to process |
 | [options.throwsExceptions] | <code>boolean</code> | allows processEvents method to thow exception |
 | [options.apiUrl] | <code>string</code> | override Facebook API url |
 | [options.attachmentStorage] | [<code>AttachmentCache</code>](#AttachmentCache) | cache for reusing attachments |
 | [options.requestLib] | <code>function</code> | request library replacement |
 | [senderLogger] | <code>console</code> | optional console like chat logger |
+
+<a name="Facebook+DEFAULT_EVENT_KEYS"></a>
+
+### facebook.DEFAULT\_EVENT\_KEYS
+**Kind**: instance property of [<code>Facebook</code>](#Facebook)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| Default | <code>Array.&lt;string&gt;</code> | keys allowed to process |
 
 <a name="Facebook+verifyWebhook"></a>
 
