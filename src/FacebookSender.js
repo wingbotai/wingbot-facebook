@@ -41,7 +41,7 @@ class FacebookSender extends ReturnSender {
 
         this._userRef = incommingMessage.optin && incommingMessage.optin.user_ref;
 
-        if (incommingMessage.optin) {
+        if (this._userRef) {
             this._replaceRecipient = {
                 recipient: { user_ref: this._userRef }
             };

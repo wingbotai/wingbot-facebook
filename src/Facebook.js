@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const { Request } = require('wingbot');
 const FacebookSender = require('./FacebookSender');
 
-const PROCESS_EVENTS = [
+const DEFAULT_EVENT_KEYS = [
     'postback',
     'referral',
     'optin',
@@ -39,6 +39,7 @@ class Facebook {
      * @param {string} [options.passThreadAction] - trigger this action for pass thread event
      * @param {string} [options.takeThreadAction] - trigger this action for take thread event
      * @param {string} [options.requestThreadAction] - trigger this action when thread request
+     * @param {string[]} [options.allowEventKeys] - list of keys, allowed to process
      * @param {boolean} [options.throwsExceptions] - allows processEvents method to thow exception
      * @param {string} [options.apiUrl] - override Facebook API url
      * @param {AttachmentCache} [options.attachmentStorage] - cache for reusing attachments
@@ -47,8 +48,16 @@ class Facebook {
      */
     constructor (processor, options, senderLogger = null) {
         this.processor = processor;
-        this._options = options;
+        this._options = {
+            allowEventKeys: DEFAULT_EVENT_KEYS,
+            ...options
+        };
         this._senderLogger = senderLogger;
+
+        /**
+         * @prop {string[]} Default keys allowed to process
+         */
+        this.DEFAULT_EVENT_KEYS = DEFAULT_EVENT_KEYS;
     }
 
     _getUnauthorizedError (message) {
@@ -344,7 +353,7 @@ class Facebook {
     }
 
     _processMessagingArrayItem (message, pageId, eventsBySenderId, otherEvents, isStandby = false) {
-        if (PROCESS_EVENTS.some((e) => typeof message[e] !== 'undefined')) {
+        if (this._options.allowEventKeys.some((e) => typeof message[e] !== 'undefined')) {
             let senderId = null;
 
             if (isStandby) {
