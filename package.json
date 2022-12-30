@@ -43,7 +43,7 @@
     "eslint-plugin-mocha": "^6.2.2",
     "eslint-plugin-react": "^7.18.0",
     "jsdoc-to-markdown": "^5.0.3",
-    "mocha": "^7.0.1",
+    "mocha": "^10.2.0",
     "nyc": "^15.0.0",
     "sinon": "^8.1.1",
     "wingbot": "^3.0.0-alpha.34"
